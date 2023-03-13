@@ -1,0 +1,50 @@
+
+.holyday {
+    background-color: #ffaaaa;
+}
+.total th {
+    text-align: left;
+}
+.total td {
+    text-align: right;
+}
+.alert {
+    color: red;
+}
+#cumul_week td {
+    text-align: right;
+}
+#cumul_mois td {
+    text-align: right;
+}
+table.month caption {
+    background-color: #ffb;
+}
+table.month thead th {
+    background-color: #ddd;
+}
+table.month td {
+    border: 1px gray solid;
+    text-align: right;
+}
+table.month td.separator {
+    border: 0;
+}
+@media print {
+    html, body{
+        height: 100%;
+        margin: 0;
+    }
+    body {
+        font-size: 10px;
+    }
+    #id-top {
+        display: none;
+    }
+    .table-fiche-title {
+        display: none;
+    }
+    form {
+        display: none;
+    }
+}

@@ -1,0 +1,139 @@
+# Copyright (C) 2022 Moulin Mathieu 
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see .
+
+#
+# Generic
+#
+
+# Module label 'ModuleMMIProjectName'
+ModuleMMIProjectName = Chantiers comme Projet/Tâches
+# Module description 'ModuleMMIProjectDesc'
+ModuleMMIProjectDesc = Crée un projet chantier à partir d'une commande avec un tâche par service
+
+#
+# Admin page
+#
+MMIProjectSetup = MMIProject setup
+Settings = Settings
+MMIProjectSetupPage = MMIProject setup page
+
+PROJECT_ADDTIMESPENT_MULTIPLE_USERID=Formulaire ajout de temps passé : choix multiple des utilisateurs
+MMIPROJECT_SOLIDAY = Journée de solidarité
+MMIPROJECT_DECENNALE_FIELD = Champ afficher le texte décénnale dans Devis / Commande / Facture
+MMIPROJECT_DECENNALE_TEXT = Texte à ajouter pour la décénnale
+
+#
+# ExtraFields
+#
+Extrafield_fk_commande = Commande associée
+Extrafield_fk_commandedet = Ligne commande associée
+Extrafield_fk_jalon_commandedet = Jalon commande associée
+Extrafield_intervenants = Nb intervenants
+Extrafield_heure = Heures prévues
+Extrafield_qte = Quantité à produire
+Extrafield_qte_real = Quantité produite
+Extrafield_temps_restant_prevu_1 = Temps restant selon conso
+Extrafield_temps_restant_prevu_2 = Temps restant selon prévu
+Extrafield_fk_unit = Unité de production
+Extrafield_task_type = Type de tâche
+Extrafield_fk_task_resource = Resource utilisée dans la tâche associée
+Extrafield_fk_resource = Resource utilisée
+Extrafield_fk_propal_type = Type de vente/prestation
+Extrafield_fk_propal_technique = Technique
+Extrafield_fk_product = Produit/Service utilisé
+Extrafield_appeloffre = Type de marché
+Extrafield_propal_chantier_type = Chantier Neuf/Réno
+Extrafield_propal_client_wait = Attente retour client
+Extrafield_fk_propal_lostreason = Raison perdu/abandonné
+Extrafield_propal_liv_date_mini = Date de début d'intervention
+Extrafield_propal_remise_date_maxi = Date butoir de remise du Devis
+Extrafield_project_permanent = Projet permanent
+Extrafield_propal_decennale = Affcher la décénnale
+Extrafield_date_livraison_aff = Afficher la date de livraison
+
+#
+# About page
+#
+About = About
+MMIProjectAbout = A propos de MMIProject
+MMIProjectAboutPage = MMIProject Informations utiles (about)
+
+#
+# Sample page
+#
+MyPageName = My page name
+
+#
+# Sample widget
+#
+MyWidget = My widget
+MyWidgetDescription = My widget description
+
+#
+# Hooks
+#
+MMIProjectCreate = Créer un projet associé
+MMIProjectUpdate = Mettre à jour le Projet associé
+
+#
+# Index page
+#
+MMIProjectArea = Gestion du temps
+
+#
+# Time Sheet page
+#
+MMIProjectAreaTimeSheet = Récapitilatif mensuel
+
+#
+# Time Form page
+#
+MMIProjectAreaTimeForm = Saisie du temps
+
+#
+# Chantiers page
+#
+MMIProjectAreaChantiers = Planning de chantiers
+
+#
+# Contrats page
+#
+MMIProjectAreaContrat = Contrats de travail
+
+#
+# Statistiques page
+#
+MMIProjectAreaStats = Statistiques (ouvrages...)
+
+#
+# Resources Rubriques
+#
+MMIProjectAreaResources = Catégories de ressources
+
+#
+# Resources Produit
+#
+MMIProjectAreaProductResources = Ressources associées
+ResourceUsage = Utilisation de la ressource
+ResourceType = Type de ressource
+
+#
+# Divers libellés
+#
+Rental = Location
+DeliveryDate = Date de livraison
+DateDeliveryPlanned = Date de livraison prévue
+
+MMIProjectOrderLocked = Un projet est rattaché à cette commande, il n'est donc pas possible de l'annuler ou la supprimer
