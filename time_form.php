@@ -211,6 +211,7 @@ while($r=$db->fetch_array($q)) {
 $projects_all = GETPOST('projects_all', 'bool');
 // Filtrer pour un projet particulier
 $fk_project = GETPOST('fk_project', 'int');
+$fk_jalon = GETPOST('fk_jalon', 'int');
 
 // Tâches à proposer
 /*
@@ -224,7 +225,8 @@ Dont le projet est :
 $task_sql_element_on = [];
 $tasks = [];
 $project_ids = [];
-$sql = 'SELECT DISTINCT pt.*
+$jalons_ids = [];
+$sql = 'SELECT DISTINCT pt.*, pt2.fk_jalon_commandedet
 
     FROM '.MAIN_DB_PREFIX.'projet_task pt
 	
@@ -253,6 +255,8 @@ if ($q) {
     while($r=$db->fetch_array($q)) {
         //var_dump($r['rowid']);
         $tasks[$r['rowid']] = $r;
+        if (!empty($r['fk_jalon_commandedet']) && !in_array($r['fk_jalon_commandedet'], $jalons_ids) && !empty($fk_project) && $r['fk_projet']==$fk_project)
+            $jalons_ids[] = $r['fk_jalon_commandedet'];
         if (!in_array($r['fk_projet'], $project_ids))
             $project_ids[] = $r['fk_projet'];
     }
@@ -273,6 +277,26 @@ if ($q) {
     }
 }
 
+$jalons = [];
+//$jalons_ids = [47];
+//var_dump($jalons_ids);
+// Jalons associés
+if (!empty($jalons_ids)) {
+    $sql = 'SELECT cl.rowid, cl.label
+        FROM '.MAIN_DB_PREFIX.'commandedet cl
+        WHERE rowid IN ('.implode(', ', $jalons_ids).')';
+    //echo '<p>'.$sql.'</p>';
+    $q = $db->query($sql);
+    //var_dump($q); var_dump($db);
+    if ($q) {
+        while($r=$db->fetch_array($q)) {
+            //var_dump($r['rowid']);
+            $jalons[$r['rowid']] = $r;
+        }
+    }
+}
+//var_dump($jalons);
+
 // Temps passé
 $time_day = [];
 $time_day2 = [];
@@ -285,6 +309,7 @@ $sql = 'SELECT ptt.*
         ON p.rowid=pt.fk_projet
     WHERE ptt.task_date="'.$db->escape($date).'"
     '.(!$projects_all && $fk_project>0 ?' AND p.rowid='.$fk_project :'').'
+    '.($fk_jalon >0 ?' AND pt2.fk_jalon_commandedet='.$fk_jalon :'').'
     '.(!$users_all ?' AND ptt.fk_user IN ('.implode(', ', $userids).')' :'').'
     ORDER BY ptt.task_datehour, ptt.task_duration, ptt.fk_task';
 //echo '<p>'.$sql.'</p>';
@@ -458,6 +483,10 @@ function parseTime2(t)
             $projects_form[$project['rowid']] = ['label'=>'['.$project['ref'].'] - '.$project['title']];
         echo $form->selectArray('fk_project', $projects_form, $fk_project, 'Choisir un projet pour filtrer les tâches');
     ?></p>
+    <p>Jalon : <select name="fk_jalon"><option value="">--</option><?php
+        foreach($jalons as $jalon)
+            echo '<option value="'.$jalon['rowid'].'"'.($fk_jalon==$jalon['rowid'] ?' selected' :'').'>'.$jalon['label'].'</option>';
+    ?></select></p>
 	<p><input type="checkbox" name="projects_all"<?php if ($projects_all) echo ' checked'; ?> /> Voir le temps passé sur tous les projets<br />(auquels j'ai accès)</p></td>
 	<td><input id="refresh" type="submit" name="_refresh" value="Refresh" /></td>
 </tr>
@@ -545,8 +574,15 @@ $duree_tot = 0;
         //var_dump($projects);
         foreach($tasks as $task) {
             if ($fk_project>0) {
-                if ($fk_project==$task['fk_projet'])
-                    $tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label']];
+                if ($fk_project==$task['fk_projet']) {
+                    if ($fk_jalon>0) {
+                        if ($fk_jalon==$task['fk_jalon_commandedet'])
+                            $tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label']];
+                    }
+                    else {
+                        $tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label']];
+                    }
+                }
             }
             else {
                 $project = $projects[$task['fk_projet']];
