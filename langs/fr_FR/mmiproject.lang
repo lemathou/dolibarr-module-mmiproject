@@ -54,6 +54,7 @@ Extrafield_fk_propal_type = Type de vente/prestation
 Extrafield_fk_propal_technique = Technique
 Extrafield_fk_product = Produit/Service utilisé
 Extrafield_appeloffre = Type de marché
+Extrafield_appeloffre_soustraitant = Sous-traitant dans un appel d'offres
 Extrafield_propal_chantier_type = Chantier Neuf/Réno
 Extrafield_propal_client_wait = Attente retour client
 Extrafield_fk_propal_lostreason = Raison perdu/abandonné
