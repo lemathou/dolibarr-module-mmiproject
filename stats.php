@@ -17,8 +17,8 @@
 
 // Load Dolibarr environment
 require_once 'env.inc.php';
-require_once 'loadmain.inc.php';
-dol_include_once('/'.$moduledir.'/lib/mmi.lib.php');
+require_once 'main_load.inc.php';
+dol_include_once('/mmicommon/lib/mmi.lib.php');
 
 // Access control
 if (!$user->admin) {
@@ -48,7 +48,7 @@ $l = [];
 
 // Temps : 
 $sql = 'SELECT cd.fk_product, a.label,
-	SUM(ptt.task_duration) AS duration,
+	SUM(ptt.task_duration)/3600 AS duration,
 	COUNT(DISTINCT p.rowid) AS projet_nb, COUNT(DISTINCT pt.rowid) AS task_nb, COUNT(DISTINCT ptt.rowid) AS time_nb, COUNT(DISTINCT ptt.fk_user) AS user_nb, COUNT(DISTINCT cd.rowid) commandedet_nb1
 	FROM '.MAIN_DB_PREFIX.'projet_task_time AS ptt
 	INNER JOIN '.MAIN_DB_PREFIX.'projet_task AS pt
@@ -122,7 +122,8 @@ foreach($l as $r) {
 	}
 	echo '<tr>';
 	foreach($r as $v)
-		echo '<td>'.$v.'<td>';
+		echo '<td align="right">'.$v.'<td>';
+	echo '<td align="right">'.($r['commandedet_amount']/$r['duration']).'<td>';
 	echo '</tr>';
 }
 echo '</tbody>';
