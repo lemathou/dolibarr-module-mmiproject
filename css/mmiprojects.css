@@ -30,6 +30,9 @@ table.month td {
 table.month td.separator {
     border: 0;
 }
+#user_name {
+    display: none;
+}
 @media print {
     html, body{
         height: 100%;
@@ -46,5 +49,8 @@ table.month td.separator {
     }
     form {
         display: none;
+    }
+    #user_name {
+        display: block;
     }
 }

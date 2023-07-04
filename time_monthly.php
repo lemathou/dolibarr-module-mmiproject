@@ -85,6 +85,8 @@ if ($user->rights->mmiproject->time->admin) {
 	echo 'Collaborateur : <select name="task_fk_user"><option value=""></option>';
 	if ($q) {
 		while($r=$db->fetch_array($q)) {
+			if ($task_fk_user==$r['rowid'])
+				$user_name = $r['label'];
 			echo '<option value="'.$r['rowid'].'"'.($task_fk_user==$r['rowid'] ?' selected' :'').'>'.$r['label'].'</option>';
 		}
 	}
@@ -806,6 +808,7 @@ $monthly = $daily*$month_workdays; // @todo recalculer bien !!
 
 // Affichage
 
+echo '<p id="user_name">'.$user_name.'</p>';
 echo '<p>Période : '.date_reverse($periode_debut).' à '.date_reverse($periode_fin).' / Mois de '.strftime("%B", strtotime($month.'-01')).' ('.date_reverse($year_month).') : '.$month_number.' jours dans le mois, '.$month_workdays.' travaillables</p>';
 echo '<p>'.$monthcur['daily'].'h/j sur contrat en vigueur, '.$monthcur['monthly'].'h à travailler dans le mois</p>';
 
