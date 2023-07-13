@@ -543,7 +543,7 @@ WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
 		("'.$firstday.'" <= h.date_debut AND h.date_debut <= "'.$lastday.'" )
 		OR ("'.$firstday.'" <= h.date_fin AND h.date_fin <= "'.$lastday.'" )
 	)';
-echo '<pre>'.$sql.'</pre>';
+//echo '<pre>'.$sql.'</pre>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
 if ($q) {
