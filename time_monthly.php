@@ -153,7 +153,7 @@ $periode_debut_weeknum = date('W', $periode_debut_ts);
 
 $periode_year_fin = $periode_year_debut+1;
 $periode_mois_fin = $periode_mois_debut-1;
-$periode_fin = $periode_year_fin.'-0'.$periode_mois_fin;
+$periode_fin = $periode_year_fin.'-'.($periode_mois_fin<=9 ?'0' :'').$periode_mois_fin;
 $periode_fin_nbdays = cal_days_in_month(CAL_GREGORIAN, $periode_mois_fin, $periode_year_fin);
 $periode_fin_date = $periode_fin.'-'.$periode_fin_nbdays;
 $periode_fin_ts = strtotime($periode_fin.'-'.$periode_fin_nbdays);
@@ -543,7 +543,7 @@ WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
 		("'.$firstday.'" <= h.date_debut AND h.date_debut <= "'.$lastday.'" )
 		OR ("'.$firstday.'" <= h.date_fin AND h.date_fin <= "'.$lastday.'" )
 	)';
-//echo '<pre>'.$sql.'</pre>';
+echo '<pre>'.$sql.'</pre>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
 if ($q) {
@@ -576,6 +576,7 @@ if ($q) {
 			$ddate = $year_month.'-'.($i<10 ?'0'.$i :$i);
 			$ldate = strtotime($ddate);
 			$daynumofweek = date('w', $ldate);
+			//var_dump($ddate);
 			// Change contract
 			if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
 				$employ_ok = false;
@@ -593,6 +594,7 @@ if ($q) {
 			if (in_array($ddate, $holidays) || in_array($daynumofweek, [0, 6]))
 				continue;
 			$l[$ddate]['arret_'.$type] = $employ['daily'];
+			//var_dump($l[$ddate]['arret_'.$type]);
 		}
 	}
 }
@@ -658,8 +660,8 @@ FROM '.MAIN_DB_PREFIX.'holiday h
 INNER JOIN '.MAIN_DB_PREFIX.'c_holiday_types ht ON ht.rowid=h.fk_type
 WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
 	AND (
-		("'.$periode_debut.'-00" <= h.date_debut AND h.date_debut <= "'.$periode_fin.'-00" )
-		OR ("'.$periode_debut.'-00" <= h.date_fin AND h.date_fin <= "'.$periode_fin.'-00" )
+		("'.$periode_debut.'-00" <= h.date_debut AND h.date_debut <= "'.$db->escape($periode_fin_date).'" )
+		OR ("'.$periode_debut.'-00" <= h.date_fin AND h.date_fin <= "'.$db->escape($periode_fin_date).'" )
 	)';
 //echo '<pre>'.$sql.'</pre>';
 $q = $db->query($sql);
