@@ -291,6 +291,10 @@ foreach($cumul_week as &$r) {
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
 		$r['nbworkdays']++;
+		// Begin contract
+		if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+			continue;
+		}
 		// Change contract
 		//var_dump($employ['end_date'], $ddate, $employ['end_date'] <= $ddate); echo '<br />';
 		if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
@@ -361,6 +365,10 @@ foreach($cumul_mois as &$r) {
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
 		$d++;
+		// Begin contract
+		if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+			continue;
+		}
 		// Change contract
 		if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
 			$employ_ok = false;
@@ -426,7 +434,11 @@ for ($i=1;$i<=$month_number;$i++) {
 	$isferie = in_array($ddate, $holidays) || $daynumofweek==0;
 	if (!($isferie && $ddate!=$soliday) && !in_array($daynumofweek, [0,6]))
 		$month_workdays++;
-	// Change contractvim .
+	// Begin contract
+	if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+		continue;
+	}
+	// Change contract
 	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
 		$employ_ok = false;
 		foreach($employs as $emp) {
@@ -472,19 +484,23 @@ foreach($holidays as $ddate) {
 	// Samedi/Dimanche ou journée de solidarité => pas férié payé
 	if (in_array($daynumofweek, [0, 6]) || $ddate==$soliday)
 		continue;
-        // Change contract
-        if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-                $employ_ok = false;
-                foreach($employs as $emp) {
-                        if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-                                $employ = $emp;
-                                $employ_ok = true;
-                                break;
-                        }
-                }
-                if (!$employ_ok)
-                        $employ = ['weekly'=>$weekly, 'daily'=>$daily];
-        }
+	// Begin contract
+	if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+		continue;
+	}
+	// Change contract
+	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
+			$employ_ok = false;
+			foreach($employs as $emp) {
+					if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
+							$employ = $emp;
+							$employ_ok = true;
+							break;
+					}
+			}
+			if (!$employ_ok)
+					$employ = ['weekly'=>$weekly, 'daily'=>$daily];
+	}
 	if ($lmonth==$month)
 		$l[$ddate]['ferie_duration'] = $employ['daily'];
 	$cumul_week[$lyear.'-'.$weeknum]['ferie_duration'] += $employ['daily'];
@@ -577,6 +593,10 @@ if ($q) {
 			$ldate = strtotime($ddate);
 			$daynumofweek = date('w', $ldate);
 			//var_dump($ddate);
+			// Begin contract
+			if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+				continue;
+			}
 			// Change contract
 			if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
 				$employ_ok = false;
@@ -735,6 +755,10 @@ if ($q) {
 			$daynumofweek = date('w', $ldate);
 			$weeknum = date('W', $ldate);
 			$ddate = $day;
+			// Begin contract
+			if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+				continue;
+			}
 			// Change contract
 			if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
 				$employ_ok = false;
