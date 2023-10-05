@@ -619,7 +619,7 @@ if ($q) {
 				continue;
 			}
 			// Change contract
-			if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
+			if (!empty($employ['end_date']) && $employ['end_date'] < $ddate) {
 				$employ_ok = false;
 				foreach($employs as $emp) {
 					if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
