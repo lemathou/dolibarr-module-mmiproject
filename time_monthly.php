@@ -75,9 +75,10 @@ print load_fiche_titre($langs->trans("MMIProjectAreaTimeSheet"), '', 'mmiproject
 
 //var_dump($user);
 
+$users = [];
 if ($user->rights->mmiproject->time->admin) {
 	echo '<form method="GET" action="time_monthly.php">';
-	$sql = 'SELECT rowid, login, CONCAT(`firstname`, " ", `lastname`) label
+	$sql = 'SELECT *, CONCAT(`firstname`, " ", `lastname`) label
 		FROM '.MAIN_DB_PREFIX.'user';
 	//echo $sql;
 	$q = $db->query($sql);
@@ -85,6 +86,7 @@ if ($user->rights->mmiproject->time->admin) {
 	echo 'Collaborateur : <select name="task_fk_user"><option value=""></option>';
 	if ($q) {
 		while($r=$db->fetch_array($q)) {
+			$users[$r['rowid']] = $r;
 			if ($task_fk_user==$r['rowid'])
 				$user_name = $r['label'];
 			echo '<option value="'.$r['rowid'].'"'.($task_fk_user==$r['rowid'] ?' selected' :'').'>'.$r['label'].'</option>';
@@ -116,6 +118,18 @@ if ($user->rights->mmiproject->time->admin) {
 }
 elseif ($user->rights->mmiproject->time->user) {
 	echo '<form method="GET" action="time_monthly.php">';
+	$sql = 'SELECT *, CONCAT(`firstname`, " ", `lastname`) label
+		FROM '.MAIN_DB_PREFIX.'user
+		WHERE rowid'.$user->id;
+	//echo $sql;
+	$q = $db->query($sql);
+	//var_dump($q); var_dump($db);
+	echo 'Collaborateur : <select name="task_fk_user"><option value=""></option>';
+	if ($q) {
+		while($r=$db->fetch_array($q)) {
+			$users[$r['rowid']] = $r;
+		}
+	}
 	echo 'Collaborateur : <input type="hidden" name="task_fk_user" value="'.$user->id.'" />'.$user->firstname.' '.$user->lastname;
 
 	$sql = 'SELECT DISTINCT YEAR(ptt.task_date) `year`, DATE_FORMAT(ptt.task_date, "%m") `month`
@@ -179,6 +193,15 @@ if ($q) {
 			'daily' => $r['weeklyhours']/5,
 		];
 	}
+}
+$user2 = $users[$task_fk_user];
+if (empty($employs) && !empty($user2['dateemployment'])) {
+	$employs[$user2['dateemployment']] = [
+		'begin_date' => $user2['dateemployment'],
+		'end_date' => $user2['dateemploymentend'],
+		'weekly' => $user2['weeklyhours'],
+		'daily' => $user2['weeklyhours']/5,
+	];
 }
 //var_dump($employs); die();
 
@@ -307,7 +330,7 @@ foreach($cumul_week as &$r) {
 				}
 			}
 			if (!$employ_ok)
-				$employ = ['weekly'=>$weekly, 'daily'=>$daily];
+				continue;
 		}
 		$r['weekly'] += $employ['daily'];
 	}
@@ -380,10 +403,8 @@ foreach($cumul_mois as &$r) {
 					break;
 				}
 			}
-			if (!$employ_ok) {
-				$employ = ['weekly'=>$weekly, 'daily'=>$daily];
-				$r['employ'] = $employ;
-			}	
+			if (!$employ_ok)
+				continue;
 		}
 		$r['monthly'] += $employ['daily'];
 
@@ -449,7 +470,7 @@ for ($i=1;$i<=$month_number;$i++) {
 			}
 		}
 		if (!$employ_ok)
-			$employ = ['weekly'=>$weekly, 'daily'=>$daily];
+			continue;
 	}
 	$l[$ddate] = array_merge([
 		'ldate' => $ldate,
@@ -490,16 +511,16 @@ foreach($holidays as $ddate) {
 	}
 	// Change contract
 	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-			$employ_ok = false;
-			foreach($employs as $emp) {
-					if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-							$employ = $emp;
-							$employ_ok = true;
-							break;
-					}
+		$employ_ok = false;
+		foreach($employs as $emp) {
+			if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
+				$employ = $emp;
+				$employ_ok = true;
+				break;
 			}
-			if (!$employ_ok)
-					$employ = ['weekly'=>$weekly, 'daily'=>$daily];
+		}
+		if (!$employ_ok)
+			continue;
 	}
 	if ($lmonth==$month)
 		$l[$ddate]['ferie_duration'] = $employ['daily'];
@@ -608,7 +629,7 @@ if ($q) {
 					}
 				}
 				if (!$employ_ok)
-					$employ = ['weekly'=>$weekly, 'daily'=>$daily];
+					continue;
 			}
 			// Jour férié, samedi, dimanche => pas comptabilisé
 			if (in_array($ddate, $holidays) || in_array($daynumofweek, [0, 6]))
@@ -770,7 +791,7 @@ if ($q) {
 					}
 				}
 				if (!$employ_ok)
-					$employ = ['weekly'=>$weekly, 'daily'=>$daily];
+					continue;
 			}
 			// Samedi, Dimanche, Férie => on compte pas
 			if (in_array($day, $holidays) || in_array($daynumofweek, [0, 6]))
