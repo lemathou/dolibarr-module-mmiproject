@@ -177,6 +177,7 @@ class modMMIProject extends DolibarrModules
 		$this->tabs[] = array('data'=>'product:+resources:Resources:mmiproject@mmiproject:$user->rights->mmiproject->resources->product:custom/mmiproject/product_resources.php?id=__ID__');
 		$this->tabs[] = array('data'=>'project:+resources:Resources:mmiproject@mmiproject:$user->rights->mmiproject->resources->product:custom/mmiproject/projet_resources.php?id=__ID__');
 		$this->tabs[] = array('data'=>'task:+task_resources:Resources:mmiproject@mmiproject:$user->rights->mmiproject->resources->product:custom/mmiproject/task_resources.php?id=__ID__');
+		$this->tabs[] = array('data'=>'user:+contracts:Contrats:mmiproject@mmiproject:$user->rights->mmiproject->contract->all:custom/mmiproject/user_contract.php?id=__ID__');
 		
 		// Example:
 		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@mmiproject:$user->rights->mmiproject->read:/mmiproject/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
@@ -317,6 +318,11 @@ class modMMIProject extends DolibarrModules
 		$this->rights[$r][1] = 'Edit Resources cat'; // Permission label
 		$this->rights[$r][4] = 'resources';
 		$this->rights[$r][5] = 'cat'; // In php code, permission will be checked by test if ($user->rights->mmiproject->myobject->write)
+		$r++;
+		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
+		$this->rights[$r][1] = 'Update user contracts'; // Permission label
+		$this->rights[$r][4] = 'contract';
+		$this->rights[$r][5] = 'all'; // In php code, permission will be checked by test if ($user->rights->mmiproject->myobject->write)
 		$r++;
 		/* BEGIN MODULEBUILDER PERMISSIONS */
 		/* END MODULEBUILDER PERMISSIONS */
