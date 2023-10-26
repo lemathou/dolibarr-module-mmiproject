@@ -31,6 +31,7 @@ $arrayofparameters = array(
 	'PROJECT_ADDTIMESPENT_MULTIPLE_USERID'=>array('type'=>'yesno', 'enabled'=>1),
 	'MMIPROJECT_SOLIDAY'=>array('type'=>'date', 'enabled'=>1),
 	'MMIPROJECT_DECENNALE_FIELD'=>array('type'=>'yesno', 'enabled'=>1),
+	'MMIPROJECT_DECENNALE_TITLE'=>array('type'=>'yesno', 'enabled'=>1),
 	'MMIPROJECT_DECENNALE_TEXT'=>array('type'=>'textarea', 'enabled'=>1),
 );
 

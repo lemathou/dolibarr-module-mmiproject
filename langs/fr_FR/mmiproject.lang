@@ -32,6 +32,7 @@ MMIProjectSetupPage = MMIProject setup page
 PROJECT_ADDTIMESPENT_MULTIPLE_USERID=Formulaire ajout de temps passé : choix multiple des utilisateurs
 MMIPROJECT_SOLIDAY = Journée de solidarité
 MMIPROJECT_DECENNALE_FIELD = Champ afficher le texte décénnale dans Devis / Commande / Facture
+MMIPROJECT_DECENNALE_TITLE = Préfixer avec un titre 'Décennale'
 MMIPROJECT_DECENNALE_TEXT = Texte à ajouter pour la décénnale
 
 #
