@@ -56,6 +56,7 @@ Extrafield_fk_propal_technique = Technique
 Extrafield_fk_product = Produit/Service utilisé
 Extrafield_appeloffre = Type de marché
 Extrafield_appeloffre_soustraitant = Sous-traitant dans un appel d'offres
+Extrafield_appeloffre_maitrise = Maitrise d'oeuvre de l'appel d'offres
 Extrafield_propal_chantier_type = Chantier Neuf/Réno
 Extrafield_propal_client_wait = Attente retour client
 Extrafield_fk_propal_lostreason = Raison perdu/abandonné
@@ -139,3 +140,5 @@ DeliveryDate = Date de livraison
 DateDeliveryPlanned = Date de livraison prévue
 
 MMIProjectOrderLocked = Un projet est rattaché à cette commande, il n'est donc pas possible de l'annuler ou la supprimer
+
+ProjectManagementAddress = Maîtrise d'ouvrage
