@@ -63,6 +63,7 @@ Extrafield_fk_propal_lostreason = Raison perdu/abandonné
 Extrafield_propal_liv_date_mini = Date de début d'intervention
 Extrafield_propal_remise_date_maxi = Date butoir de remise du Devis
 Extrafield_project_permanent = Projet permanent
+Extrafield_task_permanent = Tâche permanente
 Extrafield_propal_decennale = Affcher la décénnale
 Extrafield_date_livraison_aff = Afficher la date de livraison
 
