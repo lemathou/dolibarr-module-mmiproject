@@ -584,6 +584,112 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		}
 	}
 
+	function printFieldPreListTitle($parameters, &$object, &$action, $hookmanager)
+	{
+		$error = 0; // Error counter
+		$print = '';
+		
+		if ($this->in_context($parameters, ['tasklist']))
+		{
+			$search_no_permanent = GETPOST('search_no_permanent', 'bool');
+			$print .= '<div class="divsearchfield">';
+			$print .= '<input type="checkbox" id="search_no_permanent" name="search_no_permanent" value="1"'.($search_no_permanent ?' checked="checked"' :'').' /> <label for="search_no_permanent">Sans Permanent</label>';
+			$print .= '</div>';
+
+			$search_no_advanced_100 = GETPOST('search_no_advanced_100', 'bool');
+			$print .= '<div class="divsearchfield">';
+			$print .= '<input type="checkbox" id="search_no_advanced_100" name="search_no_advanced_100" value="1"'.($search_no_advanced_100 ?' checked="checked"' :'').' /> <label for="search_no_advanced_100">Sans finis 100%</for>';
+			$print .= '</div>';
+		}
+
+		if (! $error)
+		{
+			$this->resprints = $print;
+			return 0; // or return 1 to replace standard code
+		}
+		else
+		{
+			$this->errors[] = 'Error message';
+			return -1;
+		}
+	}
+	
+	function printFieldListWhere($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf;
+
+		$error = 0; // Error counter
+		$print = '';
+		
+		if ($this->in_context($parameters, ['tasklist']))
+		{
+			if (GETPOST('search_no_permanent', 'bool'))
+				$print .= " AND (ef.permanent IS NULL OR ef.permanent = 0)";
+			if (GETPOST('search_no_advanced_100', 'bool'))
+				$print .= " AND (t.progress IS NULL OR t.progress < 100)";
+		}
+
+		if (! $error)
+		{
+			$this->resprints = $print;
+			return 0; // or return 1 to replace standard code
+		}
+		else
+		{
+			$this->errors[] = 'Error message';
+			return -1;
+		}
+	}
+	
+	function printFieldListFrom($parameters, &$object, &$action, $hookmanager)
+	{
+		$error = 0; // Error counter
+		$print = '';
+		
+		if ($this->in_context($parameters, ['tasklist']))
+		{
+			//
+		}
+
+		if (! $error)
+		{
+			$this->resprints = $print;
+			return 0; // or return 1 to replace standard code
+		}
+		else
+		{
+			$this->errors[] = 'Error message';
+			return -1;
+		}
+	}
+
+	function printFieldListSearchParam($parameters, &$object, &$action, $hookmanager)
+	{
+		$error = 0; // Error counter
+		$print = '';
+		
+		if ($this->in_context($parameters, ['tasklist']))
+		{
+			if (GETPOST('search_no_permanent', 'bool')) {
+				$print .= '&search_no_permanent=1';
+			}
+			if (GETPOST('search_no_advanced_100', 'bool')) {
+				$print .= '&search_no_advanced_100=1';
+			}
+		}
+
+		if (! $error)
+		{
+			$this->resprints = $print;
+			return 0; // or return 1 to replace standard code
+		}
+		else
+		{
+			$this->errors[] = 'Error message';
+			return -1;
+		}
+	}
+
 	/* Add here any other hooked methods... */
 }
 
