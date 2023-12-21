@@ -210,47 +210,24 @@ class modMMIProject extends DolibarrModules
 		$this->dictionaries=array(
 			'langs'=>'mmiproject@mmiproject',
 			// List of tables we want to see into dictonnary editor
-			'tabname'=>array(MAIN_DB_PREFIX."c_propal_lostreason", MAIN_DB_PREFIX."c_propal_type", MAIN_DB_PREFIX."c_propal_technique"),
+			'tabname'=>array(MAIN_DB_PREFIX."c_propal_lostreason", MAIN_DB_PREFIX."c_propal_type", MAIN_DB_PREFIX."c_propal_technique", MAIN_DB_PREFIX."c_order_project_task"),
 			// Label of tables
-			'tablib'=>array("Raison Perdu Propal", 'Type de Propal', 'Technique Propal'),
+			'tablib'=>array("Raison Perdu Propal", 'Type de Propal', 'Technique Propal', 'Tâches de chantiers depuis commande'),
 			// Request to select fields
-			'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_propal_lostreason as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_propal_type as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_propal_technique as f'),
+			'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_propal_lostreason as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_propal_type as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_propal_technique as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active, f.pos FROM '.MAIN_DB_PREFIX.'c_order_project_task as f'),
 			// Sort order
-			'tabsqlsort'=>array("pos ASC", "pos ASC", "pos ASC"),
+			'tabsqlsort'=>array("pos ASC", "pos ASC", "pos ASC", "pos ASC"),
 			// List of fields (result of select to show dictionary)
-			'tabfield'=>array("code,label,pos", "code,label,pos", "code,label,pos"),
+			'tabfield'=>array("code,label,pos", "code,label,pos", "code,label,pos", "code,label,pos"),
 			// List of fields (list of fields to edit a record)
-			'tabfieldvalue'=>array("code,label,pos", "code,label,pos", "code,label,pos"),
+			'tabfieldvalue'=>array("code,label,pos", "code,label,pos", "code,label,pos", "code,label,pos"),
 			// List of fields (list of fields for insert)
-			'tabfieldinsert'=>array("code,label,pos", "code,label,pos", "code,label,pos"),
+			'tabfieldinsert'=>array("code,label,pos", "code,label,pos", "code,label,pos", "code,label,pos"),
 			// Name of columns with primary key (try to always name it 'rowid')
-			'tabrowid'=>array("rowid", "rowid", "rowid"),
+			'tabrowid'=>array("rowid", "rowid", "rowid", "rowid"),
 			// Condition to show each dictionary
-			'tabcond'=>array($conf->mmiproject->enabled, $conf->mmiproject->enabled, $conf->mmiproject->enabled)
+			'tabcond'=>array($conf->mmiproject->enabled, $conf->mmiproject->enabled, $conf->mmiproject->enabled, $conf->mmiproject->enabled)
 		);
-		/* Example:
-		$this->dictionaries=array(
-			'langs'=>'mmiproject@mmiproject',
-			// List of tables we want to see into dictonnary editor
-			'tabname'=>array(MAIN_DB_PREFIX."table1", MAIN_DB_PREFIX."table2", MAIN_DB_PREFIX."table3"),
-			// Label of tables
-			'tablib'=>array("Table1", "Table2", "Table3"),
-			// Request to select fields
-			'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table1 as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table2 as f', 'SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table3 as f'),
-			// Sort order
-			'tabsqlsort'=>array("label ASC", "label ASC", "label ASC"),
-			// List of fields (result of select to show dictionary)
-			'tabfield'=>array("code,label", "code,label", "code,label"),
-			// List of fields (list of fields to edit a record)
-			'tabfieldvalue'=>array("code,label", "code,label", "code,label"),
-			// List of fields (list of fields for insert)
-			'tabfieldinsert'=>array("code,label", "code,label", "code,label"),
-			// Name of columns with primary key (try to always name it 'rowid')
-			'tabrowid'=>array("rowid", "rowid", "rowid"),
-			// Condition to show each dictionary
-			'tabcond'=>array($conf->mmiproject->enabled, $conf->mmiproject->enabled, $conf->mmiproject->enabled)
-		);
-		*/
 
 		// Boxes/Widgets
 		// Add here list of php file(s) stored in mmiproject/core/boxes that contains a class to show a widget.

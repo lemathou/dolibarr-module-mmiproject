@@ -153,8 +153,11 @@ class ActionsMMIProject extends MMI_Actions_1_0
 				}
 
 				// Tâches de base
-				$tasks_default = ['Réunion d’équipe', 'Réunion client', 'Réunion autre entreprise', 'Nettoyage&nbsp;/&nbsp;Rangement', 'Chargement&nbsp;/&nbsp;Déchargement (au dépôt)', 'Gestion administrative', 'Formulation', 'Aléas'];
-				foreach ($tasks_default as $label) {
+				$sql = 'SELECT label FROM `'.MAIN_DB_PREFIX.'c_order_project_task`
+					WHERE active=1
+					ORDER BY pos';
+				$q = $db->query($sql);
+				while(list($label)=$q->fetch_row()) {
 					$task = new Task($db);
 					$task->fk_project = $project->id;
 					$task->label = $label;
@@ -255,6 +258,7 @@ class ActionsMMIProject extends MMI_Actions_1_0
 					}
 
 					// Jalon ?
+					// @todo Attention, avec le nouveau système de jalon ça ne va plus fonctionner !!! C'est la merde !
 					if ($oline->fk_parent_line)
 						$task->array_options['options_fk_jalon_commandedet'] = $oline->fk_parent_line;
 
