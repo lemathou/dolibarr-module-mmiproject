@@ -191,6 +191,26 @@ class ActionsMMIProject extends MMI_Actions_1_0
 			if(!empty($project)) {
 				$assoc = [];
 				$resources = [];
+				$jalons = [];
+				$jalon = NULL;
+				if (!empty($object->lines)) foreach($object->lines as $oline) {
+					// Fin jalon (ss-total)
+					if ($oline->product_type==9 && $oline->qty==99) {
+						$jalon = NULL;
+					}
+					// Texte
+					elseif ($oline->product_type==9 && $oline->qty==50) {
+						$jalons[$oline->id] = $jalon = $oline;
+					}
+					// Jalon
+					elseif ($oline->product_type==9 && $oline->qty==1) {
+						$jalons[$oline->id] = $jalon = $oline;
+					}
+					// Dans Jalon
+					elseif($jalon)
+						$oline->jalon = $jalon;
+				}
+				//var_dump($jalons); die();
 				if (!empty($object->lines)) foreach($object->lines as $oline) {
 					// Uniquement si produit bien paramétré
 					if ($oline->product_type!=1 || !$oline->fk_product)
@@ -257,10 +277,14 @@ class ActionsMMIProject extends MMI_Actions_1_0
 						}
 					}
 
-					// Jalon ?
-					// @todo Attention, avec le nouveau système de jalon ça ne va plus fonctionner !!! C'est la merde !
-					if ($oline->fk_parent_line)
+					// Module Jalon
+					if ($oline->fk_parent_line) {
 						$task->array_options['options_fk_jalon_commandedet'] = $oline->fk_parent_line;
+					}
+					// Module Sous-Total ATM
+					elseif (!empty($oline->jalon)) {
+						$task->array_options['options_fk_jalon_commandedet'] = $oline->jalon->id;
+					}
 
 					// Infos ligne commande
 					$task->array_options['options_qte'] = $oline->qty;
