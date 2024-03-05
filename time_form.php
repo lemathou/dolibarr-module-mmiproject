@@ -312,7 +312,7 @@ $sql = 'SELECT ptt.*
     '.(!$projects_all && $fk_project>0 ?' AND p.rowid='.$fk_project :'').'
     '.($fk_jalon >0 ?' AND pt2.fk_jalon_commandedet='.$fk_jalon :'').'
     '.(!$users_all ?' AND ptt.fk_user IN ('.implode(', ', $userids).')' :'').'
-    ORDER BY ptt.element_datehour, ptt.element_duration, ptt.fk_task';
+    ORDER BY ptt.element_datehour, ptt.element_duration, ptt.fk_element';
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
@@ -320,10 +320,10 @@ if ($q) {
     while($r=$db->fetch_array($q)) {
         //var_dump($r);
         $time_day[$r['rowid']] = $r;
-        if (empty($time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']]))
-            $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']] = ['rows'=>[], 'userids'=>[]];
-        $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']]['rows'][$r['rowid']] = $r;
-        $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']]['userids'][] = $r['fk_user'];
+        if (empty($time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']]))
+            $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']] = ['rows'=>[], 'userids'=>[]];
+        $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']]['rows'][$r['rowid']] = $r;
+        $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']]['userids'][] = $r['fk_user'];
     }
 }
 
@@ -520,18 +520,18 @@ function parseTime2(t)
 $duree_tot = 0;
 ?>
 <?php foreach($time_day as $row) {
-    $task = $tasks[$row['fk_task']];
+    $task = $tasks[$row['fk_element']];
     $project = $projects[$task['fk_projet']];
     //var_dump($task);
     //var_dump($row);
-    $datenew = (empty($rowold) || ($row['element_datehour'] != $rowold['element_datehour']) || ($row['element_duration'] != $rowold['element_duration']) || ($row['fk_task'] != $rowold['fk_task']));
+    $datenew = (empty($rowold) || ($row['element_datehour'] != $rowold['element_datehour']) || ($row['element_duration'] != $rowold['element_duration']) || ($row['fk_element'] != $rowold['fk_element']));
     $rowold = $row;
     $duree_tot += $row['element_duration'];
     $duree_h = floor($row['element_duration']/3600);
     $duree_m = floor($row['element_duration']/60) - $duree_h*60;
     $duree = ($duree_h>=10 ?$duree_h :'0'.$duree_h).':'.($duree_m>=10 ?$duree_m :'0'.$duree_m);
-    //var_dump($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_task']]['userids']);  echo '<br />';
-    $time_useradd = empty(array_intersect($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_task']]['userids']));
+    //var_dump($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_element']]['userids']);  echo '<br />';
+    $time_useradd = empty(array_intersect($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_element']]['userids']));
     ?>
     <tr>
         <td class="begin_hour" align="right"><?php if ($datenew) echo substr($row['element_datehour'], 11, 5); ?></td>
@@ -543,8 +543,8 @@ $duree_tot = 0;
         <td><?php if (!empty($row['note'])) echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; ?></td>
         <td>
             <?php if ($row['fk_user']==$user->id || $time_admin) { ?>
-            <a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_task']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
-            <a class="reposition paddingleft" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_task']; ?>&amp;action=deleteline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist&amp;token=<?php echo $token; ?>"><span class="fas fa-trash pictodelete paddingleft" style="" title="Supprimer"></span></a>
+            <a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_element']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
+            <a class="reposition paddingleft" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_element']; ?>&amp;action=deleteline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist&amp;token=<?php echo $token; ?>"><span class="fas fa-trash pictodelete paddingleft" style="" title="Supprimer"></span></a>
             <?php }
             if ($datenew && $time_useradd) { ?>
             <input class="duplicate" type="button" value="Dupliquer" />
