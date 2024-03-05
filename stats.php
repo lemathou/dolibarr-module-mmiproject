@@ -48,11 +48,11 @@ $l = [];
 
 // Temps : 
 $sql = 'SELECT cd.fk_product, a.label,
-	SUM(ptt.task_duration)/3600 AS duration,
+	SUM(ptt.element_duration)/3600 AS duration,
 	COUNT(DISTINCT p.rowid) AS projet_nb, COUNT(DISTINCT pt.rowid) AS task_nb, COUNT(DISTINCT ptt.rowid) AS time_nb, COUNT(DISTINCT ptt.fk_user) AS user_nb, COUNT(DISTINCT cd.rowid) commandedet_nb1
-	FROM '.MAIN_DB_PREFIX.'projet_task_time AS ptt
+	FROM '.MAIN_DB_PREFIX.'element_time AS ptt
 	INNER JOIN '.MAIN_DB_PREFIX.'projet_task AS pt
-		ON pt.rowid=ptt.fk_task
+		ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
 	INNER JOIN '.MAIN_DB_PREFIX.'projet AS p
 		ON p.rowid=pt.fk_projet
 	LEFT JOIN '.MAIN_DB_PREFIX.'projet_extrafields AS p2
@@ -90,9 +90,9 @@ $sql = 'SELECT cd.fk_product, a.label,
 
 	WHERE cd.rowid IN (
 		SELECT pt2.fk_commandedet
-		FROM '.MAIN_DB_PREFIX.'projet_task_time AS ptt
+		FROM '.MAIN_DB_PREFIX.'element_time AS ptt
 		INNER JOIN '.MAIN_DB_PREFIX.'projet_task AS pt
-			ON pt.rowid=ptt.fk_task
+			ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
 		INNER JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields AS pt2
 			ON pt2.fk_object=pt.rowid
 		WHERE 1

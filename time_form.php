@@ -232,8 +232,8 @@ $sql = 'SELECT DISTINCT pt.*, pt2.fk_jalon_commandedet
 	
 	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2
         ON pt2.fk_object=pt.rowid
-    LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_time ptt
-        ON ptt.fk_task=pt.rowid
+    LEFT JOIN '.MAIN_DB_PREFIX.'element_time ptt
+        ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
 	INNER JOIN '.MAIN_DB_PREFIX.'projet p
         ON p.rowid=pt.fk_projet
 	LEFT JOIN '.MAIN_DB_PREFIX.'element_contact pe
@@ -301,17 +301,18 @@ if (!empty($jalons_ids)) {
 $time_day = [];
 $time_day2 = [];
 $sql = 'SELECT ptt.*
-    FROM '.MAIN_DB_PREFIX.'projet_task_time ptt
-    INNER JOIN '.MAIN_DB_PREFIX.'projet_task pt ON pt.rowid=ptt.fk_task
+    FROM '.MAIN_DB_PREFIX.'element_time ptt
+    INNER JOIN '.MAIN_DB_PREFIX.'projet_task pt
+        ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
 	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2
         ON pt2.fk_object=pt.rowid
 	INNER JOIN '.MAIN_DB_PREFIX.'projet p
         ON p.rowid=pt.fk_projet
-    WHERE ptt.task_date="'.$db->escape($date).'"
+    WHERE ptt.element_date="'.$db->escape($date).'"
     '.(!$projects_all && $fk_project>0 ?' AND p.rowid='.$fk_project :'').'
     '.($fk_jalon >0 ?' AND pt2.fk_jalon_commandedet='.$fk_jalon :'').'
     '.(!$users_all ?' AND ptt.fk_user IN ('.implode(', ', $userids).')' :'').'
-    ORDER BY ptt.task_datehour, ptt.task_duration, ptt.fk_task';
+    ORDER BY ptt.element_datehour, ptt.element_duration, ptt.fk_task';
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
@@ -319,10 +320,10 @@ if ($q) {
     while($r=$db->fetch_array($q)) {
         //var_dump($r);
         $time_day[$r['rowid']] = $r;
-        if (empty($time_day2[$r['task_datehour'].'-'.$r['task_duration'].'-'.$r['fk_task']]))
-            $time_day2[$r['task_datehour'].'-'.$r['task_duration'].'-'.$r['fk_task']] = ['rows'=>[], 'userids'=>[]];
-        $time_day2[$r['task_datehour'].'-'.$r['task_duration'].'-'.$r['fk_task']]['rows'][$r['rowid']] = $r;
-        $time_day2[$r['task_datehour'].'-'.$r['task_duration'].'-'.$r['fk_task']]['userids'][] = $r['fk_user'];
+        if (empty($time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']]))
+            $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']] = ['rows'=>[], 'userids'=>[]];
+        $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']]['rows'][$r['rowid']] = $r;
+        $time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_task']]['userids'][] = $r['fk_user'];
     }
 }
 
@@ -523,18 +524,18 @@ $duree_tot = 0;
     $project = $projects[$task['fk_projet']];
     //var_dump($task);
     //var_dump($row);
-    $datenew = (empty($rowold) || ($row['task_datehour'] != $rowold['task_datehour']) || ($row['task_duration'] != $rowold['task_duration']) || ($row['fk_task'] != $rowold['fk_task']));
+    $datenew = (empty($rowold) || ($row['element_datehour'] != $rowold['element_datehour']) || ($row['element_duration'] != $rowold['element_duration']) || ($row['fk_task'] != $rowold['fk_task']));
     $rowold = $row;
-    $duree_tot += $row['task_duration'];
-    $duree_h = floor($row['task_duration']/3600);
-    $duree_m = floor($row['task_duration']/60) - $duree_h*60;
+    $duree_tot += $row['element_duration'];
+    $duree_h = floor($row['element_duration']/3600);
+    $duree_m = floor($row['element_duration']/60) - $duree_h*60;
     $duree = ($duree_h>=10 ?$duree_h :'0'.$duree_h).':'.($duree_m>=10 ?$duree_m :'0'.$duree_m);
-    //var_dump($userids, $time_day2[$row['task_datehour'].'-'.$row['task_duration'].'-'.$row['fk_task']]['userids']);  echo '<br />';
-    $time_useradd = empty(array_intersect($userids, $time_day2[$row['task_datehour'].'-'.$row['task_duration'].'-'.$row['fk_task']]['userids']));
+    //var_dump($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_task']]['userids']);  echo '<br />';
+    $time_useradd = empty(array_intersect($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_task']]['userids']));
     ?>
     <tr>
-        <td class="begin_hour" align="right"><?php if ($datenew) echo substr($row['task_datehour'], 11, 5); ?></td>
-        <td class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['task_datehour'])+$row['task_duration']); ?></td>
+        <td class="begin_hour" align="right"><?php if ($datenew) echo substr($row['element_datehour'], 11, 5); ?></td>
+        <td class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['element_datehour'])+$row['element_duration']); ?></td>
         <td class="duration" align="right"><?php if ($datenew) echo $duree; ?></td>
         <td><?php echo $users[$row['fk_user']]['name']; ?></td>
         <td data-fk-task="<?php echo $task['rowid']; ?>"><?php echo '<a href="/projet/tasks/time.php?id='.$task['rowid'].'">'.$task['label'].'</a>'; ?></td>

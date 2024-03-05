@@ -94,8 +94,8 @@ if ($user->rights->mmiproject->time->admin) {
 	}
 	echo '</select>';
 
-	$sql = 'SELECT DISTINCT YEAR(ptt.task_date) `year`, DATE_FORMAT(ptt.task_date, "%m") `month`
-		FROM '.MAIN_DB_PREFIX.'projet_task_time ptt';
+	$sql = 'SELECT DISTINCT YEAR(ptt.element_date) `year`, DATE_FORMAT(ptt.element_date, "%m") `month`
+		FROM '.MAIN_DB_PREFIX.'element_time ptt';
 	//echo $sql;
 	$q = $db->query($sql);
 	//var_dump($q); var_dump($db);
@@ -132,8 +132,8 @@ elseif ($user->rights->mmiproject->time->user) {
 	}
 	echo 'Collaborateur : <input type="hidden" name="task_fk_user" value="'.$user->id.'" />'.$user->firstname.' '.$user->lastname;
 
-	$sql = 'SELECT DISTINCT YEAR(ptt.task_date) `year`, DATE_FORMAT(ptt.task_date, "%m") `month`
-		FROM '.MAIN_DB_PREFIX.'projet_task_time ptt
+	$sql = 'SELECT DISTINCT YEAR(ptt.element_date) `year`, DATE_FORMAT(ptt.element_date, "%m") `month`
+		FROM '.MAIN_DB_PREFIX.'element_time ptt
 		WHERE ptt.fk_user='.$user->id;
 	//echo $sql;
 	$q = $db->query($sql);
@@ -535,15 +535,19 @@ $task_type = [
 
 // Jours Travaillés du mois
 
-$sql = 'SELECT ptt.task_date, SUM(ptt.task_duration)/3600 duration, p2.task_type 
-	FROM '.MAIN_DB_PREFIX.'projet_task_time ptt
-	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt ON pt.rowid=ptt.fk_task
-	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2 ON pt2.fk_object=pt.rowid
-	LEFT JOIN '.MAIN_DB_PREFIX.'commandedet cd ON cd.rowid=pt2.fk_commandedet
-	LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2 ON p2.fk_object=cd.fk_product
+$sql = 'SELECT ptt.element_date AS `date`, SUM(ptt.element_duration)/3600 duration, p2.task_type 
+	FROM '.MAIN_DB_PREFIX.'element_time ptt
+	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt
+		ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
+	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2
+		ON pt2.fk_object=pt.rowid
+	LEFT JOIN '.MAIN_DB_PREFIX.'commandedet cd
+		ON cd.rowid=pt2.fk_commandedet
+	LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2
+		ON p2.fk_object=cd.fk_product
 	WHERE ptt.fk_user='.$task_fk_user.'
-		AND (YEAR(ptt.task_date)=\''.$db->escape($year).'\' AND MONTH(ptt.task_date)=\''.$db->escape($month).'\')
-	GROUP BY ptt.task_date, p2.task_type';
+		AND (YEAR(ptt.element_date)=\''.$db->escape($year).'\' AND MONTH(ptt.element_date)=\''.$db->escape($month).'\')
+	GROUP BY ptt.element_date, p2.task_type';
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
@@ -551,14 +555,14 @@ if ($q) {
 	while($r=$db->fetch_array($q)) {
 		//var_dump($r);
 		if ($r['task_type']==1) {
-			$l[$r['task_date']]['deplacement_duration'] += $r['duration'];
-			if ($l[$r['task_date']]['isferie'])
-				$l[$r['task_date']]['ferie_trav_duration'] = +$r['duration'];
+			$l[$r['date']]['deplacement_duration'] += $r['duration'];
+			if ($l[$r['date']]['isferie'])
+				$l[$r['date']]['ferie_trav_duration'] = +$r['duration'];
 		}
 		else {
-			$l[$r['task_date']]['duration'] += $r['duration'];
-			if ($l[$r['task_date']]['isferie'])
-				$l[$r['task_date']]['ferie_trav_duration'] = +$r['duration'];
+			$l[$r['date']]['duration'] += $r['duration'];
+			if ($l[$r['date']]['isferie'])
+				$l[$r['date']]['ferie_trav_duration'] = +$r['duration'];
 		}
 	}
 }
@@ -643,15 +647,19 @@ if ($q) {
 
 // Cumuls travaillé par mois et semaines
 
-$sql = 'SELECT SUBSTRING(ptt.task_date, 1, 7) `date`, SUM(ptt.task_duration)/3600 duration, p2.task_type 
-	FROM '.MAIN_DB_PREFIX.'projet_task_time ptt
-	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt ON pt.rowid=ptt.fk_task
-	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2 ON pt2.fk_object=pt.rowid
-	LEFT JOIN '.MAIN_DB_PREFIX.'commandedet cd ON cd.rowid=pt2.fk_commandedet
-	LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2 ON p2.fk_object=cd.fk_product
+$sql = 'SELECT SUBSTRING(ptt.element_date, 1, 7) `date`, SUM(ptt.element_duration)/3600 duration, p2.task_type 
+	FROM '.MAIN_DB_PREFIX.'element_time ptt
+	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt
+		ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
+	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2
+		ON pt2.fk_object=pt.rowid
+	LEFT JOIN '.MAIN_DB_PREFIX.'commandedet cd
+		ON cd.rowid=pt2.fk_commandedet
+	LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2
+		ON p2.fk_object=cd.fk_product
 	WHERE ptt.fk_user='.$task_fk_user.'
-		AND (\''.$db->escape($periode_debut).'-00\' <= ptt.task_date AND ptt.task_date <= \''.$db->escape($periode_fin_date).'\')
-	GROUP BY SUBSTRING(ptt.task_date, 1, 7), p2.task_type';
+		AND (\''.$db->escape($periode_debut).'-00\' <= ptt.element_date AND ptt.element_date <= \''.$db->escape($periode_fin_date).'\')
+	GROUP BY SUBSTRING(ptt.element_date, 1, 7), p2.task_type';
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
@@ -665,15 +673,19 @@ if ($q) {
 	}
 }
 
-$sql = 'SELECT YEAR(ptt.task_date) `year`, WEEK(ptt.task_date, 1) `date`, SUM(ptt.task_duration)/3600 duration, p2.task_type 
-	FROM '.MAIN_DB_PREFIX.'projet_task_time ptt
-	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt ON pt.rowid=ptt.fk_task
-	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2 ON pt2.fk_object=pt.rowid
-	LEFT JOIN '.MAIN_DB_PREFIX.'commandedet cd ON cd.rowid=pt2.fk_commandedet
-	LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2 ON p2.fk_object=cd.fk_product
+$sql = 'SELECT YEAR(ptt.element_date) `year`, WEEK(ptt.element_date, 1) `date`, SUM(ptt.element_duration)/3600 duration, p2.task_type 
+	FROM '.MAIN_DB_PREFIX.'element_time ptt
+	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt
+		ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
+	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task_extrafields pt2
+		ON pt2.fk_object=pt.rowid
+	LEFT JOIN '.MAIN_DB_PREFIX.'commandedet cd
+		ON cd.rowid=pt2.fk_commandedet
+	LEFT JOIN '.MAIN_DB_PREFIX.'product_extrafields p2
+		ON p2.fk_object=cd.fk_product
 	WHERE ptt.fk_user='.$task_fk_user.'
-		AND (\''.$db->escape($periode_debut).'-00\' <= ptt.task_date AND ptt.task_date <= \''.$db->escape($periode_fin_date).'\')
-	GROUP BY WEEK(ptt.task_date, 1), p2.task_type';
+		AND (\''.$db->escape($periode_debut).'-00\' <= ptt.element_date AND ptt.element_date <= \''.$db->escape($periode_fin_date).'\')
+	GROUP BY WEEK(ptt.element_date, 1), p2.task_type';
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
