@@ -816,6 +816,27 @@ if ($q) {
 	}
 }
 
+// Heures sup mensuelles
+
+$sql = 'SELECT e.`date`, e.`paid_hrsup`
+	FROM '.MAIN_DB_PREFIX.'user_pay e
+	WHERE e.fk_user='.$task_fk_user.'
+	ORDER BY e.`date`';
+//echo '<p>'.$sql.'</p>';
+$q = $db->query($sql);
+//var_dump($q);
+$paid = [];
+if ($q) {
+	while($r=$db->fetch_array($q)) {
+		//var_dump($r);
+		//echo substr($r['date'], 0, 7);
+		$paid[substr($r['date'], 0, 7)] = $r;
+		if(!isset($cumul_mois[substr($r['date'], 0, 7)]['hsup']))
+			$cumul_mois[substr($r['date'], 0, 7)]['hsup'] = 0;
+		$cumul_mois[substr($r['date'], 0, 7)]['hsup'] += $r['paid_hrsup'];
+		//var_dump($cumul_mois[substr($r['date'], 0, 7)]);
+	}
+}
 
 // Calculs cumulés Hebdo
 
@@ -846,7 +867,7 @@ $ctheo = 0;
 $c = 0;
 foreach($cumul_mois as &$r) {
 	$r['effectif'] = $r['duration'] + $r['deplacement_duration'] + $r['arret_formation'];
-	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_autre'];
+	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_autre'] - $r['hsup'];
 	$r['delta'] = $r['comptabilise'] - $r['monthly'];
 	$r['paye'] = $r['effectif'] + $r['ferie_duration'] - (substr($soliday, 0, 7)==$r['date'] ?$l[$soliday]['daily'] :0);
 
@@ -1232,6 +1253,7 @@ if (!empty($month_aff)) {
 	echo '<th>RTT</th>';
 	echo '<th>Maladie</th>';
 	echo '<th>Autre</th>';
+	echo '<th>H.Sup<br />Payées</th>';
 
 	echo '<td></td>';
 	echo '<th>Effectif<br />(Trav+Dépl+Form)</th>';
@@ -1269,6 +1291,7 @@ if (!empty($month_aff)) {
 		echo '<td>'.duration_aff($r['arret_rtt']).'</p>';
 		echo '<td>'.duration_aff($r['arret_maladie']).'</p>';
 		echo '<td>'.duration_aff($r['arret_autre']).'</p>';
+		echo '<td>'.duration_aff($r['hsup']).'</p>';
 
 		echo '<td></td>';
 		echo '<td'.($r['effectif']>$monthly_max ?' class="alert"' :'').'>'.duration_aff($r['effectif']).'</p>';
