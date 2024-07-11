@@ -298,7 +298,7 @@ class modMMIProject extends DolibarrModules
 		$this->rights[$r][5] = 'cat'; // In php code, permission will be checked by test if ($user->rights->mmiproject->myobject->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Update user contracts'; // Permission label
+		$this->rights[$r][1] = 'Update user contracts and set hours'; // Permission label
 		$this->rights[$r][4] = 'contract';
 		$this->rights[$r][5] = 'all'; // In php code, permission will be checked by test if ($user->rights->mmiproject->myobject->write)
 		$r++;

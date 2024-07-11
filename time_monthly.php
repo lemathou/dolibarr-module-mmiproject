@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2022 Moulin Mathieu <contact@iprospective.fr>
+/* Copyright (C) 2022-2024 Moulin Mathieu iProspective <contact@iprospective.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@ dol_include_once('/mmiproject/lib/mmiproject.lib.php');
 
 setlocale(LC_TIME, "fr_FR.utf8");
 date_default_timezone_set('Europe/Paris');
+
+$right_contract_all = $user->rights->mmiproject->contract->all;
 
 // @todo rendre administrable
 $soliday = !empty($conf->global->MMIPROJECT_SOLIDAY) ?$conf->global->MMIPROJECT_SOLIDAY :'2022-11-01';
@@ -1276,7 +1278,7 @@ if (!empty($month_aff)) {
 	echo '</thead>';
 	echo '<tbody>';
 	foreach($cumul_mois as &$r) {
-		echo '<tr>';
+		echo '<tr data-date="'.$r['date'].'">';
 		echo '<td>'.$r['date'].'</td>';
 
 		echo '<td>'.$r['nbdays'].'</td>';
@@ -1291,7 +1293,12 @@ if (!empty($month_aff)) {
 		echo '<td>'.duration_aff($r['arret_rtt']).'</p>';
 		echo '<td>'.duration_aff($r['arret_maladie']).'</p>';
 		echo '<td>'.duration_aff($r['arret_autre']).'</p>';
-		echo '<td>'.duration_aff($r['hsup']).'</p>';
+		if ($right_contract_all) {
+			echo '<td><input class="hsup" value="'.duration_aff($r['hsup']).'" size="2" /></p>';
+		}
+		else {
+			echo '<td>'.duration_aff($r['hsup']).'</p>';
+		}
 
 		echo '<td></td>';
 		echo '<td'.($r['effectif']>$monthly_max ?' class="alert"' :'').'>'.duration_aff($r['effectif']).'</p>';
@@ -1316,6 +1323,19 @@ if (!empty($month_aff)) {
 	echo '</tbody>';
 	echo '</table>';
 }
+
+if ($right_contract_all) { ?>
+<script>
+$('input.hsup').change(function(){
+	$.post('ajax.php?action=hsup', {user_id: <?php echo $task_fk_user; ?>, month: $(this.parentNode.parentNode).data('date'), hsup: $(this).val()}, function(r){
+		if (r.r==false) {
+			alert(r);
+		}
+	});
+	//alert('Heure sup mise à jour');
+});
+</script>
+<?php }
 
 //var_dump($l);
 
