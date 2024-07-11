@@ -66,6 +66,16 @@ Extrafield_project_permanent = Projet permanent
 Extrafield_task_permanent = Tâche permanente
 Extrafield_propal_decennale = Affcher la décénnale
 Extrafield_date_livraison_aff = Afficher la date de livraison
+Extrafield_serial = Numéro de série
+Extrafield_length = Longueur (m)
+Extrafield_width = Largeur (m)
+Extrafield_height = Hauteur (m)
+Extrafield_weight = Poids (Kg)
+Extrafield_puissance = Puissance (W)
+Extrafield_intensite = Intensité (A)
+Extrafield_acquisition_date = Date d'acquisition
+Extrafield_acquisition_price = Prix d'acquisition
+Extrafield_actual_price_value = Valeur actuelle
 
 #
 # About page

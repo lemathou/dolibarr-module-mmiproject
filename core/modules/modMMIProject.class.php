@@ -493,6 +493,21 @@ class modMMIProject extends DolibarrModules
 		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extrafields = new ExtraFields($this->db);
 		
+		// Resource
+		$extrafields->addExtraField('serial', $langs->trans('Extrafield_serial'), 'varchar',  100,  "32", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_serial'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('length', $langs->trans('Extrafield_rlength'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_length'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('weight', $langs->trans('Extrafield_weight'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_weight'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('height', $langs->trans('Extrafield_height'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_height'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('width', $langs->trans('Extrafield_width'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_width'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('puissance', $langs->trans('Extrafield_puissance'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_puissance'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('intensite', $langs->trans('Extrafield_intensite'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_intensite'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('acquisition_date', $langs->trans('Extrafield_acquisition_date'), 'date',  100,  "", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_acquisition_date'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('acquisition_price', $langs->trans('Extrafield_acquisition_price'), 'price',  100,  "", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_acquisition_price'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('price', $langs->trans('Extrafield_actual_price_value'), 'price',  100,  "", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_acquisition_actual_price_value'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		
+		// Product
+		$extrafields->addExtraField('task_type', $langs->trans('Extrafield_task_type'), 'select',  100,  3, 'product',  0, 0, '', array('options'=>array('1'=>'Déplacement de personne','2'=>'Réalisation/Pose','3'=>'Installation/Protection/Manutention','4'=>'Autre prestation de service à compter','5'=>'Location avec opérateur','6'=>'Organisation')), 1,'', -1, $langs->trans('ExtrafieldToolTip_task_type'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		
 		// Project
 		$extrafields->addExtraField('fk_commande', $langs->trans('Extrafield_fk_commande'), 'link', 100, '', 'projet', 0, 0, '', array('options'=>array('Commande:commande/class/commande.class.php'=>null)), 1, '', 5, $langs->trans('ExtrafieldToolTip_fk_commande'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled');
 		$extrafields->addExtraField('permanent', $langs->trans('Extrafield_project_permanent'), 'boolean',  100,  "", 'projet',  0, 0, '', "", 1,'', -1, $langs->trans('ExtrafieldToolTip_project_permanent'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
@@ -540,9 +555,6 @@ class modMMIProject extends DolibarrModules
 		// Propal line
 		$extrafields->addExtraField('intervenants', $langs->trans('Extrafield_intervenants'), 'int', 100, 2, 'propaldet', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_intervenants'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled');
 		$extrafields->addExtraField('heure', $langs->trans('Extrafield_heure'), 'double', 100, '10,2', 'propaldet', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_heure'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
-		
-		// Product
-		$extrafields->addExtraField('task_type', $langs->trans('Extrafield_task_type'), 'select',  100,  3, 'product',  0, 0, '', array('options'=>array('1'=>'Déplacement de personne','2'=>'Réalisation/Pose','3'=>'Installation/Protection/Manutention','4'=>'Autre prestation de service à compter','5'=>'Location avec opérateur','6'=>'Organisation')), 1,'', -1, $langs->trans('ExtrafieldToolTip_task_type'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 
 		// Facture
 		$extrafields->addExtraField('propal_decennale', $langs->trans('Extrafield_propal_decennale'), 'boolean',  100,  "", 'facture',  0, 0, '', "", 1,'', -1, $langs->trans('ExtrafieldToolTip_propal_decennale'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled & $conf->global->MMIPROJECT_DECENNALE_FIELD', 0);
