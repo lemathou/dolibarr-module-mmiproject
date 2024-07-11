@@ -302,6 +302,11 @@ class modMMIProject extends DolibarrModules
 		$this->rights[$r][4] = 'contract';
 		$this->rights[$r][5] = 'all'; // In php code, permission will be checked by test if ($user->rights->mmiproject->myobject->write)
 		$r++;
+		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
+		$this->rights[$r][1] = 'Show TimeSheet'; // Permission label
+		$this->rights[$r][4] = 'time';
+		$this->rights[$r][5] = 'show'; // In php code, permission will be checked by test if ($user->rights->mmiproject->myobject->write)
+		$r++;
 		/* BEGIN MODULEBUILDER PERMISSIONS */
 		/* END MODULEBUILDER PERMISSIONS */
 
@@ -335,7 +340,7 @@ class modMMIProject extends DolibarrModules
 			'langs'=>'mmiproject@mmiproject',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000+$r,
 			'enabled'=>'$conf->mmiproject->enabled',  // Define condition to show or hide menu entry. Use '$conf->mmiproject->enabled' if entry must be visible if module is enabled.
-			'perms'=>'$user->rights->mmiproject->time->user',			                // Use 'perms'=>'$user->rights->mmiproject->level1->level2' if you want your menu with a permission rules
+			'perms'=>'$user->rights->mmiproject->time->user && $user->rights->mmiproject->time->show',			                // Use 'perms'=>'$user->rights->mmiproject->level1->level2' if you want your menu with a permission rules
 			'target'=>'',
 			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
 		);
