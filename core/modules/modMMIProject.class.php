@@ -117,6 +117,7 @@ class modMMIProject extends DolibarrModules
 			'hooks' => array(
 				'ordercard',
 				'tasklist',
+				'projecttaskcard',
 				//   'data' => array(
 				//       'hookcontext1',
 				//       'hookcontext2',

@@ -153,3 +153,7 @@ DateDeliveryPlanned = Date de livraison prévue
 MMIProjectOrderLocked = Un projet est rattaché à cette commande, il n'est donc pas possible de l'annuler ou la supprimer
 
 ProjectManagementAddress = Maîtrise d'ouvrage
+
+MMIProjectTaskMove = Déplacer la tâche
+ConfirmMoveProjectTask = Êtes-vous sûr de vouloir déplacer la tâche <b>%s</b>?
+TaskMoveToProject = Déplacer la tâche vers le projet

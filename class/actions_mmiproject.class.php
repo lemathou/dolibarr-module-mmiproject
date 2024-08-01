@@ -23,6 +23,11 @@
  * Put detailed description here.
  */
 
+require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/resource/class/dolresource.class.php';
+
 dol_include_once('custom/mmicommon/class/mmi_actions.class.php');
 
 /**
@@ -100,22 +105,25 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		global $conf, $user, $langs, $db;
 
 		$error = 0; // Error counter
-		
-		require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
-		require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
-		dol_include_once('product/class/product.class.php');
-		dol_include_once('resource/class/dolresource.class.php');
-		$product = new Product($db);
-		$resource = new Dolresource($db);
 
-		if (in_array($parameters['currentcontext'], array('propalcard'))) {
+		// Propales
+
+		if ($this->in_context($parameters, 'propalcard')) {
+			/** @var Propal $object */
 			// @todo trigger après passage devis=>commande, récupérer les extrafields
 		}
 
 		//var_dump($parameters, $object);
 		//var_dump($action);
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if (in_array($parameters['currentcontext'], array('ordercard'))) {
+
+		// Commandes
+
+		elseif ($this->in_context($parameters, 'ordercard')) {
+			/** @var Commande $object */
+			$product = new Product($db);
+			$resource = new Dolresource($db);
+
 			// Créer projet chantier associé
 			if ($action=='createproject') {
 				if (empty($conf->projet->enabled)) {
@@ -337,11 +345,113 @@ class ActionsMMIProject extends MMI_Actions_1_0
 			}
 		}
 
+		// Tâches
+
+		elseif ($this->in_context($parameters, 'projecttaskcard')) {
+			/** @var Task $object */
+			if ($action=='confirm_moveprojecttask') {
+				$id = $parameters['id'];
+				$fk_projectto = GETPOST('fk_projectto');
+
+				// Look for children
+				$children_ids = [];
+				$toto_parent_ids = [$id];
+				while (!empty($toto_parent_ids)) {
+					$sql = "SELECT rowid";
+					$sql .= " FROM ".MAIN_DB_PREFIX."projet_task";
+					$sql .= " WHERE fk_task_parent IN (".implode(', ', $toto_parent_ids).")";
+					$toto_parent_ids = [];
+					$result = $this->db->query($sql);
+					$children = [];
+					if ($result) {
+						while ($objp = $this->db->fetch_object($result)) {
+							if (!in_array($objp->rowid, $children_ids)) {
+								$children_ids[] = $objp->rowid;
+								$toto_parent_ids[] = $objp->rowid;
+							}
+						}
+					}
+				}
+				//var_dump($children_ids); return -1;
+
+				$object->fetch($id);
+				$object->fk_project = $fk_projectto;
+				$object->fk_task_parent = 0;
+				$res = $object->update($user);
+
+				foreach($children_ids as $child_id) {
+					$task = new Task($this->db);
+					$task->fetch($child_id);
+					$task->fk_project = $fk_projectto;
+					$res = $task->update($user);
+				}
+
+				//var_dump($res, $object->error);
+
+				//var_dump("Déplacer vers : ".$fk_projectto);
+				//$this->errors[] = 'Déplacé vers :'.$fk_projectto;
+			}
+		}
+
 		if (!$error) {
-			$this->results = array('myreturn' => 999);
-			$this->resprints = 'A text to show';
+			// $this->results = array('myreturn' => 999);
+			// $this->resprints = 'A text to show';
 			return 0; // or return 1 to replace standard code
 		} else {
+			return -1;
+		}
+	}
+
+
+	/**
+	 * Overloading the formConfirm function : replacing the parent's function with the one below
+	 *
+	 * @param   array           $parameters     Hook metadatas (context, etc...)
+	 * @param   CommonObject    $object         The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param   string          $action         Current action (if set). Generally create or edit or null
+	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
+	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	public function formConfirm($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf, $user, $langs;
+		//var_dump($parameters, $action);
+
+		$error = 0; // Error counter
+
+		if ($this->in_context($parameters, 'projecttaskcard')) {
+			if ($action=='moveprojecttask') {
+				$form = $parameters['form'];
+
+				// Choix projets
+				$selectFields = " p.rowid, p.ref, p.title";
+				$sql = "SELECT ";
+				$sql .= $selectFields;
+				$sql .= " FROM " . $this->db->prefix() . "projet as p";
+				$sql .= ' WHERE p.entity IN (' . getEntity('project') . ')';
+				$result = $this->db->query($sql);
+				$projectslist = [];
+				if ($result) {
+					while ($objp = $this->db->fetch_object($result)) {
+						$projectslist[$objp->rowid] = $objp->ref.' - '.$objp->title;
+					}
+				}
+				//var_dump();
+
+				$formquestion = [
+					['type' => 'select', 'name' => 'fk_projectto', 'label' => $langs->trans('TaskMoveToProject'), 'values' => $projectslist],
+				];
+				$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('Move'), $langs->trans('ConfirmMoveProjectTask', $object->ref), 'confirm_moveprojecttask', $formquestion, 0, 1);
+				$this->resprints = $formconfirm;
+			}
+		}
+
+		if (!$error) {
+			// $this->results = array('myreturn' => 999);
+			// $this->resprints = 'A text to show';
+			return 0; // or return 1 to replace standard code
+		} else {
+			// $this->errors[] = 'Error message';
 			return -1;
 		}
 	}
@@ -370,11 +480,11 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		}
 
 		if (!$error) {
-			$this->results = array('myreturn' => 999);
-			$this->resprints = 'A text to show';
+			// $this->results = array('myreturn' => 999);
+			// $this->resprints = 'A text to show';
 			return 0; // or return 1 to replace standard code
 		} else {
-			$this->errors[] = 'Error message';
+			// $this->errors[] = 'Error message';
 			return -1;
 		}
 	}
@@ -397,14 +507,14 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		$disabled = 1;
 
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {		// do something only for the context 'somecontext1' or 'somecontext2'
+		if ($this->in_context($parameters, ['somecontext1', 'somecontext2'])) {		// do something only for the context 'somecontext1' or 'somecontext2'
 			$this->resprints = '<option value="0"'.($disabled ? ' disabled="disabled"' : '').'>'.$langs->trans("MMIProjectMassAction").'</option>';
 		}
 
 		if (!$error) {
 			return 0; // or return 1 to replace standard code
 		} else {
-			$this->errors[] = 'Error message';
+			// $this->errors[] = 'Error message';
 			return -1;
 		}
 	}
@@ -418,7 +528,7 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		
 		//var_dump($parameters, $object);
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if (in_array($parameters['currentcontext'], array('ordercard'))) {
+		if ($this->in_context($parameters, 'ordercard')) {
 			if (!empty($conf->projet->enabled)) {
 				if ($object->status > 0 && !$object->fk_project)
 					echo '<a id="createproject" class="butAction" href="?id='.$object->id.'&action=createproject">'.$langs->trans("MMIProjectCreate").'</a>';
@@ -427,6 +537,9 @@ class ActionsMMIProject extends MMI_Actions_1_0
 					echo '<script>$(document).ready(function(){ $("a.butActionDelete").click(function(){ alert("'.$langs->trans("MMIProjectOrderLocked").'"); return false; }); });</script>';
 				}
 			}
+		}
+		elseif ($this->in_context($parameters, 'projecttaskcard')) {
+			echo '<a id="moveprojecttask" class="butAction" href="?id='.$object->id.'&action=moveprojecttask">'.$langs->trans("MMIProjectTaskMove").'</a>';
 		}
 
 		if (!$error) {
@@ -485,7 +598,7 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		dol_syslog(get_class($this).'::executeHooks action='.$action);
 
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {
+		if ($this->in_context($parameters, ['somecontext1', 'somecontext2'])) {
 			// do something only for the context 'somecontext1' or 'somecontext2'
 		}
 
