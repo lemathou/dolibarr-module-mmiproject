@@ -29,6 +29,9 @@ dol_include_once('/mmiproject/lib/mmiproject.lib.php');
 setlocale(LC_TIME, "fr_FR.utf8");
 date_default_timezone_set('Europe/Paris');
 
+$show_rtt = false;
+$show_rcr = true;
+
 $right_contract_all = $user->rights->mmiproject->contract->all;
 
 // @todo rendre administrable
@@ -175,6 +178,14 @@ $periode_fin_date = $periode_fin.'-'.$periode_fin_nbdays;
 $periode_fin_ts = strtotime($periode_fin.'-'.$periode_fin_nbdays);
 $periode_fin_weeknum = date('W', $periode_fin_ts);
 
+// Période précédente
+$periode_prev_year_debut = $periode_year_debut-1;
+$periode_prev_debut = $periode_prev_year_debut.'-0'.$periode_mois_debut;
+$periode_prev_year_fin = $periode_year_fin-1;
+$periode_prev_fin = $periode_prev_year_fin.'-'.($periode_mois_fin<=9 ?'0' :'').$periode_mois_fin;
+$periode_prev_fin_nbdays = cal_days_in_month(CAL_GREGORIAN, $periode_mois_fin, $periode_prev_year_fin);
+$periode_prev_fin_date = $periode_prev_fin.'-'.$periode_prev_fin_nbdays;
+
 //var_dump($task_user);
 
 // Contrats de travail
@@ -257,7 +268,8 @@ $model = [
 	// congés
 	'arret_cp' => 0,
 	'arret_maladie' => 0,
-	'arret_rtt' => 0,
+	'arret_rtt' => 0, // Récup pas payée car horaires hebdo > horaires payées contrat => compensation
+	'arret_rcr' => 0, // Récup payés plutôt que payer des heures sup, récupérées de l'exercice précédent
 	'arret_autre' => 0,
 	// Cumul arrets
 	'arret_justifie' => 0,
@@ -601,6 +613,9 @@ if ($q) {
 		// rtt
 		if ($r['fk_type']==4)
 			$type = 'rtt';
+		// crc
+		if ($r['fk_type']==44 || $r['code']=='LEAVE_RCR_FR')
+			$type = 'rcr';
 		// payé
 		if ($r['fk_type']==5)
 			$type = 'cp';
@@ -701,7 +716,55 @@ if ($q) {
 	}
 }
 
+
+// Heures sup mensuelles
+
+$sql = 'SELECT e.*
+	FROM '.MAIN_DB_PREFIX.'user_pay e
+	WHERE e.fk_user='.$task_fk_user.'
+		AND "'.$periode_debut.'-00" <= e.`date` AND e.`date` <= "'.$db->escape($periode_fin_date).'"
+	ORDER BY e.`date`';
+//echo '<p>'.$sql.'</p>';
+$q = $db->query($sql);
+//var_dump($q);
+$paid = [];
+if ($q) {
+	while($r=$db->fetch_array($q)) {
+		//var_dump($r);
+		//echo substr($r['date'], 0, 7);
+		$paid[substr($r['date'], 0, 7)] = $r;
+		if(!isset($cumul_mois[substr($r['date'], 0, 7)]['hsup'])) {
+			$cumul_mois[substr($r['date'], 0, 7)]['hsup'] = 0;
+			$cumul_mois[substr($r['date'], 0, 7)]['decal_hsup_conge'] = 0;
+		}
+		$cumul_mois[substr($r['date'], 0, 7)]['hsup'] += $r['paid_hrsup'];
+		$cumul_mois[substr($r['date'], 0, 7)]['decal_hsup_conge'] += $r['decal_hsup_conge'];
+		//var_dump($cumul_mois[substr($r['date'], 0, 7)]);
+	}
+}
+//var_dump($cumul_mois);
+
+// Récup H.SUp décalées période précédente
+$hsup_prev_decale = 0;
+$hsup_prev_rcr_pris = 0;
+$sql = 'SELECT e.*
+	FROM '.MAIN_DB_PREFIX.'user_pay e
+	WHERE e.fk_user='.$task_fk_user.'
+		AND "'.$periode_prev_debut.'-00" <= e.`date` AND e.`date` <= "'.$db->escape($periode_prev_fin_date).'"
+	ORDER BY e.`date`';
+//echo '<p>'.$sql.'</p>';
+$q = $db->query($sql);
+//var_dump($q);
+$paid = [];
+if ($q) {
+	while($r=$db->fetch_array($q)) {
+		$hsup_prev_decale += $r['decal_hsup_conge'];
+		//var_dump($r);
+	}
+}
+
 // Cumul congés par mois et semaines
+
 
 if (!empty($employs)) foreach($employs as $r) {
 	$employ = $r;
@@ -733,6 +796,9 @@ if ($q) {
 		// rtt
 		if ($r['code']=='LEAVE_RTT_FR')
 			$type = 'rtt';
+		// crc
+		if ($r['code']=='LEAVE_RCR_FR')
+			$type = 'rcr';
 		// payé
 		if ($r['code']=='LEAVE_PAID_FR')
 			$type = 'cp';
@@ -814,31 +880,15 @@ if ($q) {
 			$cumul_mois[substr($day, 0, 7)]['arret_'.$type.'_j'] += 1;
 			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type] += $employ['daily'];
 			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type.'_j'] += 1;
+
+			if ($type=='rcr') {
+				$hsup_prev_rcr_pris += $employ['daily'];
+			}
 		}
 	}
 }
 
-// Heures sup mensuelles
-
-$sql = 'SELECT e.`date`, e.`paid_hrsup`
-	FROM '.MAIN_DB_PREFIX.'user_pay e
-	WHERE e.fk_user='.$task_fk_user.'
-	ORDER BY e.`date`';
-//echo '<p>'.$sql.'</p>';
-$q = $db->query($sql);
-//var_dump($q);
-$paid = [];
-if ($q) {
-	while($r=$db->fetch_array($q)) {
-		//var_dump($r);
-		//echo substr($r['date'], 0, 7);
-		$paid[substr($r['date'], 0, 7)] = $r;
-		if(!isset($cumul_mois[substr($r['date'], 0, 7)]['hsup']))
-			$cumul_mois[substr($r['date'], 0, 7)]['hsup'] = 0;
-		$cumul_mois[substr($r['date'], 0, 7)]['hsup'] += $r['paid_hrsup'];
-		//var_dump($cumul_mois[substr($r['date'], 0, 7)]);
-	}
-}
+$hsup_prev_decale_reste = $hsup_prev_decale - $hsup_prev_rcr_pris;
 
 // Calculs cumulés Hebdo
 
@@ -847,9 +897,9 @@ $ctheo = 0;
 $c = 0;
 foreach($cumul_week as &$r) {
 	$r['effectif'] = $r['duration'] + $r['deplacement_duration'] + $r['arret_formation'];
-	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_autre'];
+	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_rcr'] + $r['arret_autre'];
 	$r['delta'] = $r['comptabilise'] - $r['weekly'];
-	$r['paye'] = $r['effectif'] + $r['ferie_duration'] - ($solidweeknum==$r['weeknum'] ?$l[$soliday]['daily'] :0);
+	$r['paye'] = $r['effectif'] + $r['ferie_duration'] + $r['arret_rcr'] - ($solidweeknum==$r['weeknum'] ?$l[$soliday]['daily'] :0);
 	
 	$c += $r['comptabilise'];
 	$ctheo += $r['weekly'];
@@ -867,11 +917,13 @@ unset($r);
 $cdelta = 0;
 $ctheo = 0;
 $c = 0;
-foreach($cumul_mois as &$r) {
+foreach($cumul_mois as $mois=>&$r) {
 	$r['effectif'] = $r['duration'] + $r['deplacement_duration'] + $r['arret_formation'];
-	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_autre'] - $r['hsup'];
+	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_rcr']+ $r['arret_autre'] - $r['hsup'] - $r['decal_hsup_conge'];
+	if ($mois == $periode_year_debut.'-'.($periode_mois_debut<10 ?'0'.$periode_mois_debut :$periode_mois_debut))
+		$r['comptabilise'] += $hsup_prev_decale_reste;
 	$r['delta'] = $r['comptabilise'] - $r['monthly'];
-	$r['paye'] = $r['effectif'] + $r['ferie_duration'] - (substr($soliday, 0, 7)==$r['date'] ?$l[$soliday]['daily'] :0);
+	$r['paye'] = $r['effectif'] + $r['ferie_duration'] + $r['arret_rcr'] - (substr($soliday, 0, 7)==$r['date'] ?$l[$soliday]['daily'] :0);
 
 	$c += $r['comptabilise'];
 	$ctheo += $r['monthly'];
@@ -909,6 +961,7 @@ echo '<thead>';
 	echo '<th width="60">H. >'.$weekly1.'h</th>';
 	echo '<th width="60">H. >'.$weekly2.'h</th>';
 	echo '<th width="60">H. CP</th>';
+	echo '<th width="60">H. RCR</th>';
 	echo '<th width="60">Abs. justif.</th>';
 	echo '<th width="60">Forma.</th>';
 	//echo '<th width="60">Partiel</th>';
@@ -928,7 +981,7 @@ foreach($l as $ddate=>$row) {
 		echo '<tr> <td>Semaine&nbsp;'.$row['weeknum'].'</th> <th colspan="11">'.date_reverse($week_dates['week_start']).' au '.date_reverse($week_dates['week_end']).'</th></tr>';
 		$week = $model;
 	}
-	$row['arret_justifie'] = $row['arret_autre']+$row['arret_maladie']+$row['arret_rtt'];
+	$row['arret_justifie'] = $row['arret_autre']+$row['arret_maladie']+$row['arret_rtt']+$row['arret_rcr'];
 
 	// Cumul semaine
 	foreach(array_keys($model) as $key) if (!in_array($key, ['seuil1_duration', 'seuil2_duration']))
@@ -945,6 +998,7 @@ foreach($l as $ddate=>$row) {
 	echo '<td></td>';
 	echo '<td></td>';
 	echo '<td>'.($row['arret_cp'] ?$row['arret_cp'] :'').'</td>';
+	echo '<td>'.($row['arret_rcr'] ?$row['arret_rcr'] :'').'</td>';
 	echo '<td>'.($row['arret_justifie'] ?$row['arret_justifie'] :'').'</td>';
 	echo '<td>'.($row['arret_formation'] ?$row['arret_formation'] :'').'</td>';
 	echo '</tr>';
@@ -965,6 +1019,7 @@ foreach($l as $ddate=>$row) {
 		echo '<td>'.duration_aff($week['seuil1_duration']).'</td>';
 		echo '<td>'.duration_aff($week['seuil2_duration']).'</td>';
 		echo '<td>'.duration_aff($week['arret_cp']).'</td>';
+		echo '<td>'.duration_aff($week['arret_rcr']).'</td>';
 		echo '<td>'.duration_aff($week['arret_justifie']).'</td>';
 		echo '<td>'.duration_aff($week['arret_formation']).'</td>';
 		echo '</tr>';
@@ -987,6 +1042,7 @@ foreach($l as $ddate=>$row) {
 	echo '<td>'.duration_aff($total['seuil1_duration']).'</td>';
 	echo '<td>'.duration_aff($total['seuil2_duration']).'</td>';
 	echo '<td>'.duration_aff($total['arret_cp']).'</td>';
+	echo '<td>'.duration_aff($total['arret_rcr']).'</td>';
 	echo '<td>'.duration_aff($total['arret_justifie']).'</td>';
 	echo '<td>'.duration_aff($total['arret_formation']).'</td>';
 	echo '</tr>';
@@ -1177,6 +1233,7 @@ if (!empty($weeks_aff)) {
 	echo '<th>Férié</th>';
 	echo '<th>CP</th>';
 	echo '<th>RTT</th>';
+	echo '<th>RCR</th>';
 	echo '<th>Maladie</th>';
 	echo '<th>Autre</th>';
 
@@ -1211,6 +1268,7 @@ if (!empty($weeks_aff)) {
 		echo '<td>'.duration_aff($r['ferie_duration']).'</p>';
 		echo '<td>'.duration_aff($r['arret_cp']).'</p>';
 		echo '<td>'.duration_aff($r['arret_rtt']).'</p>';
+		echo '<td>'.duration_aff($r['arret_rcr']).'</p>';
 		echo '<td>'.duration_aff($r['arret_maladie']).'</p>';
 		echo '<td>'.duration_aff($r['arret_autre']).'</p>';
 
@@ -1237,7 +1295,10 @@ if (!empty($weeks_aff)) {
 // Affichage mois
 
 if (!empty($month_aff)) {
-	echo '<p>Attention, les RTT ne sont volontairement pas ajoutées au delta, en effet, l\'idée est justement de les utiliser pour abaisser le delta !</p>';
+	echo '<p>Attention, les RTT ne sont volontairement pas ajoutées au delta, en effet, l\'idée est justement de les utiliser pour abaisser ce dernier !</p>';
+	if (!empty($hsup_prev_decale)) {
+		echo '<p><b style="color: red;">Heures sup décalées depuis l\'exercice précédent : '.$hsup_prev_decale.' / Prises en RCR : '.$hsup_prev_rcr_pris.' / Reste à prendre si besoin : '. $hsup_prev_decale_reste.'</b></p>';
+	}
 	echo '<table border="1" cellpadding="2" id="cumul_mois">';
 	echo '<caption>Récap mois</caption>';
 	echo '<thead>';
@@ -1252,10 +1313,14 @@ if (!empty($month_aff)) {
 	echo '<th>Form.</th>';
 	echo '<th>Férié</th>';
 	echo '<th>CP</th>';
-	echo '<th>RTT</th>';
+	if (!empty($show_rtt))
+		echo '<th>RTT</th>';
+	if (!empty($show_rcr))
+		echo '<th>RCR</th>';
 	echo '<th>Maladie</th>';
 	echo '<th>Autre</th>';
 	echo '<th>H.Sup<br />Payées</th>';
+	echo '<th>H.Sup<br />Décalées</th>';
 
 	echo '<td></td>';
 	echo '<th>Effectif<br />(Trav+Dépl+Form)</th>';
@@ -1277,6 +1342,7 @@ if (!empty($month_aff)) {
 	echo '</tr>';
 	echo '</thead>';
 	echo '<tbody>';
+	$prems = true;
 	foreach($cumul_mois as &$r) {
 		echo '<tr data-date="'.$r['date'].'">';
 		echo '<td>'.$r['date'].'</td>';
@@ -1290,14 +1356,19 @@ if (!empty($month_aff)) {
 		echo '<td>'.duration_aff($r['arret_formation']).'</p>';
 		echo '<td>'.duration_aff($r['ferie_duration']).'</p>';
 		echo '<td>'.duration_aff($r['arret_cp']).'</p>';
-		echo '<td>'.duration_aff($r['arret_rtt']).'</p>';
+		if (!empty($show_rtt))
+			echo '<td>'.duration_aff($r['arret_rtt']).'</p>';
+		if (!empty($show_rcr))
+			echo '<td>'.duration_aff($r['arret_rcr']).($prems && $hsup_prev_decale_reste ?' + '.$hsup_prev_decale_reste :'').'</p>';
 		echo '<td>'.duration_aff($r['arret_maladie']).'</p>';
 		echo '<td>'.duration_aff($r['arret_autre']).'</p>';
 		if ($right_contract_all) {
 			echo '<td><input class="hsup" value="'.duration_aff($r['hsup']).'" size="2" /></p>';
+			echo '<td><input class="decal_hsup_conge" value="'.duration_aff($r['decal_hsup_conge']).'" size="2" /></p>';
 		}
 		else {
 			echo '<td>'.duration_aff($r['hsup']).'</p>';
+			echo '<td>'.duration_aff($r['decal_hsup_conge']).'</p>';
 		}
 
 		echo '<td></td>';
@@ -1318,6 +1389,9 @@ if (!empty($month_aff)) {
 		echo '<td>'.duration_aff($r['cumul_theo']).'</p>';
 		echo '<td style="color: '.($r['cumul_delta']>=0 ?'green' :'red').';">'.duration_aff($r['cumul_delta']).'</p>';
 		echo '</tr>';
+
+		if ($prems)
+			$prems = false;
 	}
 	unset($r);
 	echo '</tbody>';
@@ -1328,6 +1402,14 @@ if ($right_contract_all) { ?>
 <script>
 $('input.hsup').change(function(){
 	$.post('ajax.php?action=hsup', {user_id: <?php echo $task_fk_user; ?>, month: $(this.parentNode.parentNode).data('date'), hsup: $(this).val()}, function(r){
+		if (r.r==false) {
+			alert(r);
+		}
+	});
+	//alert('Heure sup mise à jour');
+});
+$('input.decal_hsup_conge').change(function(){
+	$.post('ajax.php?action=decal_hsup_conge', {user_id: <?php echo $task_fk_user; ?>, month: $(this.parentNode.parentNode).data('date'), hsup: $(this).val()}, function(r){
 		if (r.r==false) {
 			alert(r);
 		}

@@ -59,3 +59,30 @@ if ($action=='hsup') {
 	}
 	die(json_encode(['r'=>true, 'message'=>$sql]));
 }
+
+// Mise à jour des heures sup décalées
+if ($action=='decal_hsup_conge') {
+	if (! $right_contract_all) {
+		die(json_encode(['r'=>false, 'error'=>"Unauthorized"]));
+	}
+	$hsup = GETPOST('hsup');
+	if (!is_numeric($hsup))
+		$hsup = NULL;
+	$user_id = GETPOST('user_id');
+	if (!is_numeric($user_id))
+		die(json_encode(['r'=>false, 'error'=>'Invalid user']));
+	$month = GETPOST('month');
+	if (!$month)
+		die(json_encode(['r'=>false, 'error'=>'Invalid month']));
+	$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'user_pay WHERE fk_user='.$user_id.' AND `date`="'.$month.'-01"';
+	$resql = $db->query($sql);
+	if ($resql && ($db->num_rows($resql) > 0) && (list($rowid)=$resql->fetch_row())) {
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.'user_pay SET decal_hsup_conge='.(is_numeric($hsup) ?$hsup :'NULL').' WHERE rowid='.$rowid;
+		$db->query($sql);
+	}
+	else {
+		$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'user_pay (`fk_user`, `date`, `decal_hsup_conge`) VALUES('.$user_id.', "'.$month.'-01", '.(is_numeric($hsup) ?$hsup :'NULL').')';
+		$db->query($sql);
+	}
+	die(json_encode(['r'=>true, 'message'=>$sql]));
+}
