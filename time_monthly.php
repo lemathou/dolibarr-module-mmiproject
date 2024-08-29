@@ -981,7 +981,7 @@ foreach($l as $ddate=>$row) {
 		echo '<tr> <td>Semaine&nbsp;'.$row['weeknum'].'</th> <th colspan="11">'.date_reverse($week_dates['week_start']).' au '.date_reverse($week_dates['week_end']).'</th></tr>';
 		$week = $model;
 	}
-	$row['arret_justifie'] = $row['arret_autre']+$row['arret_maladie']+$row['arret_rtt']+$row['arret_rcr'];
+	$row['arret_justifie'] = $row['arret_autre']+$row['arret_maladie']+$row['arret_rtt'];
 
 	// Cumul semaine
 	foreach(array_keys($model) as $key) if (!in_array($key, ['seuil1_duration', 'seuil2_duration']))
@@ -1079,7 +1079,15 @@ echo '<th>Heures ferié payé<br />(hors journée solidarité)</th>';
 echo '<td>'.duration_aff($monthcur['ferie_duration']).'</td>';
 echo '</tr>';
 echo '<tr>';
-echo '<th>Total absences justifiées à déduire<br /><i>RTT+maladie+CP+autre</i></th>';
+echo '<th>Total RCR pris</th>';
+echo '<td>'.duration_aff($monthcur['arret_rcr']).'</td>';
+echo '</tr>';
+echo '<tr>';
+echo '<th>Total CP pris</th>';
+echo '<td>'.duration_aff($monthcur['arret_cp']).'</td>';
+echo '</tr>';
+echo '<tr>';
+echo '<th>Total absences justifiées à déduire<br /><i>RTT+maladie+autre</i></th>';
 echo '<td>'.duration_aff($monthcur['arret_justifie']).'</td>';
 echo '</tr>';
 echo '<tr>';
