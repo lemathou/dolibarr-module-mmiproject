@@ -333,6 +333,7 @@ foreach($cumul_week as &$r) {
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
 		$r['nbworkdays']++;
+
 		// Begin contract
 		if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
 			continue;
@@ -351,7 +352,18 @@ foreach($cumul_week as &$r) {
 			if (!$employ_ok)
 				continue;
 		}
-		$r['weekly'] += $employ['daily'];
+
+		// Travaillable
+		$date_workday = 0;
+		$floornbworkday = floor($employ['days']);
+		$ceilnbworkday = ceil($employ['days']);
+		if ($daynumofweek<=$floornbworkday) {
+			$date_workday = 1;
+		}
+		elseif ($daynumofweek<$ceilnbworkday) {
+			$date_workday = $employ['days'] - $floornbworkday;
+		}
+		$r['weekly'] += $date_workday*$employ['daily'];
 	}
 	//var_dump($r);
 }
@@ -674,6 +686,7 @@ if ($q) {
 			$ldate = strtotime($ddate);
 			$daynumofweek = date('w', $ldate);
 			//var_dump($ddate);
+
 			// Begin contract
 			if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
 				continue;
