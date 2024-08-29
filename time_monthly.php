@@ -399,6 +399,7 @@ foreach($cumul_mois as &$r) {
 		$daynumofweek = date('w', $ldate);
 		$ddate = date('Y-m-d', $ldate);
 		$isferie = in_array($ddate, $holidays);
+		$date_workday = 0;
 		if ($isferie && $ddate!=$soliday)
 			$r['nbferies']++;
 		if ($isferie && $daynumofweek==0)
@@ -406,7 +407,7 @@ foreach($cumul_mois as &$r) {
 		// on ne comptabilise pas
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
-		$d++;
+
 		// Begin contract
 		if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
 			continue;
@@ -425,7 +426,16 @@ foreach($cumul_mois as &$r) {
 			if (!$employ_ok)
 				continue;
 		}
-		$r['monthly'] += $employ['daily'];
+
+		// Jour travaillable
+		$floornbworkday = floor($employ['days']);
+		if ($daynumofweek<=$floornbworkday) {
+			$d += $date_workday = 1;
+		}
+		elseif ($floornbworkday<$employ['days']) {
+			$d += $date_workday = $employ['days'] - $floornbworkday;
+		}
+		$r['monthly'] += $date_workday*$employ['daily'];
 
 		// CP pris/heures à faire en fct du contrat...
 		// Donc compter par jour !!
@@ -436,8 +446,8 @@ foreach($cumul_mois as &$r) {
 	// Workday / Workhours
 	$r['nbworkdays'] = $d;
 	// CP
-	$r['cp_j_gagne'] = 2.5;
-	$r['cp_gagne'] = 2.5*$employ['daily'];
+	$r['cp_j_gagne'] = 2.5*$employ['day']/5;
+	$r['cp_gagne'] = 2.5*$employ['daily']*$employ['day']/5;
 	//var_dump($r['date'], $year_month);
 	if ($r['date'] <= $year_month) {
 		$total['cp_j_gagne'] += $r['cp_j_gagne'];
@@ -472,8 +482,7 @@ for ($i=1;$i<=$month_number;$i++) {
 	$ddate = date('Y-m-d', $ldate);
 	$daynumofweek = date('w', $ldate);
 	$isferie = in_array($ddate, $holidays) || $daynumofweek==0;
-	if (!($isferie && $ddate!=$soliday) && !in_array($daynumofweek, [0,6]))
-		$month_workdays++;
+
 	// Begin contract
 	if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
 		continue;
@@ -491,6 +500,19 @@ for ($i=1;$i<=$month_number;$i++) {
 		if (!$employ_ok)
 			continue;
 	}
+
+	// Travaillable
+	$date_workday = 0;
+	if (!($isferie && $ddate!=$soliday) && !in_array($daynumofweek, [0,6])) {
+		$floornbworkday = floor($employ['days']);
+		if ($daynumofweek<=$floornbworkday) {
+			$month_workdays += $date_workday = 1;
+		}
+		elseif ($floornbworkday<$employ['days']) {
+			$month_workdays += $date_workday = $employ['days'] - $floornbworkday;
+		}
+	}
+
 	$l[$ddate] = array_merge([
 		'ldate' => $ldate,
 		'dayofweek' => strftime('%A', $ldate),
@@ -500,7 +522,7 @@ for ($i=1;$i<=$month_number;$i++) {
 		'isferie' => $isferie,
 		//'year' => date('Y', $ldate),
 		'timespent' => [], // Optionnal detailled list
-		'daily' => $employ['daily'],
+		'daily' => $date_workday ?$date_workday*$employ['daily'] :0,
 		],
 		$model);
 }
@@ -541,10 +563,19 @@ foreach($holidays as $ddate) {
 		if (!$employ_ok)
 			continue;
 	}
+	// Travaillable
+	$date_workday = 0;
+	$floornbworkday = floor($employ['days']);
+	if ($daynumofweek<=$floornbworkday) {
+		$date_workday = 1;
+	}
+	elseif ($floornbworkday<$employ['days']) {
+		$date_workday = $employ['days'] - $floornbworkday;
+	}
 	if ($lmonth==$month)
-		$l[$ddate]['ferie_duration'] = $employ['daily'];
-	$cumul_week[$lyear.'-'.$weeknum]['ferie_duration'] += $employ['daily'];
-	$cumul_mois[$lyearmonth]['ferie_duration'] += $employ['daily'];
+		$l[$ddate]['ferie_duration'] = $date_workday*$employ['daily'];
+	$cumul_week[$lyear.'-'.$weeknum]['ferie_duration'] += $date_workday*$employ['daily'];
+	$cumul_mois[$lyearmonth]['ferie_duration'] += $date_workday*$employ['daily'];
 }
 //die();
 
@@ -660,7 +691,18 @@ if ($q) {
 			// Jour férié, samedi, dimanche => pas comptabilisé
 			if (in_array($ddate, $holidays) || in_array($daynumofweek, [0, 6]))
 				continue;
-			$l[$ddate]['arret_'.$type] = $employ['daily'];
+
+			// Travaillable
+			$date_workday = 0;
+			$floornbworkday = floor($employ['days']);
+			if ($daynumofweek<=$floornbworkday) {
+				$date_workday = 1;
+			}
+			elseif ($floornbworkday<$employ['days']) {
+				$date_workday = $employ['days'] - $floornbworkday;
+			}
+
+			$l[$ddate]['arret_'.$type] = $date_workday*$employ['daily'];
 			//var_dump($l[$ddate]['arret_'.$type]);
 		}
 	}
