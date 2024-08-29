@@ -940,13 +940,26 @@ if ($q) {
 			// Samedi, Dimanche, Férie => on compte pas
 			if (in_array($day, $holidays) || in_array($daynumofweek, [0, 6]))
 				continue;
-			$cumul_mois[substr($day, 0, 7)]['arret_'.$type] += $employ['daily'];
-			$cumul_mois[substr($day, 0, 7)]['arret_'.$type.'_j'] += 1;
-			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type] += $employ['daily'];
-			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type.'_j'] += 1;
+
+
+			// Travaillable
+			$date_workday = 0;
+			$floornbworkday = floor($employ['days']);
+			$ceilnbworkday = ceil($employ['days']);
+			if ($daynumofweek<=$floornbworkday) {
+				$date_workday = 1;
+			}
+			elseif ($daynumofweek<$ceilnbworkday) {
+				$date_workday = $employ['days'] - $floornbworkday;
+			}
+
+			$cumul_mois[substr($day, 0, 7)]['arret_'.$type] += $date_workday*$employ['daily'];
+			$cumul_mois[substr($day, 0, 7)]['arret_'.$type.'_j'] += $date_workday;
+			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type] += $date_workday*$employ['daily'];
+			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type.'_j'] += $date_workday;
 
 			if ($type=='rcr') {
-				$hsup_prev_rcr_pris += $employ['daily'];
+				$hsup_prev_rcr_pris += $date_workday*$employ['daily'];
 			}
 		}
 	}
