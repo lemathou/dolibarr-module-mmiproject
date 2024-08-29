@@ -429,10 +429,11 @@ foreach($cumul_mois as &$r) {
 
 		// Jour travaillable
 		$floornbworkday = floor($employ['days']);
+		$ceilnbworkday = ceil($employ['days']);
 		if ($daynumofweek<=$floornbworkday) {
 			$d += $date_workday = 1;
 		}
-		elseif ($floornbworkday<$employ['days']) {
+		elseif ($daynumofweek==$ceilnbworkday) {
 			$d += $date_workday = $employ['days'] - $floornbworkday;
 		}
 		$r['monthly'] += $date_workday*$employ['daily'];
@@ -505,10 +506,11 @@ for ($i=1;$i<=$month_number;$i++) {
 	$date_workday = 0;
 	if (!($isferie && $ddate!=$soliday) && !in_array($daynumofweek, [0,6])) {
 		$floornbworkday = floor($employ['days']);
+		$ceilnbworkday = ceil($employ['days']);
 		if ($daynumofweek<=$floornbworkday) {
 			$month_workdays += $date_workday = 1;
 		}
-		elseif ($floornbworkday<$employ['days']) {
+		elseif ($floornbworkday==$ceilnbworkday) {
 			$month_workdays += $date_workday = $employ['days'] - $floornbworkday;
 		}
 	}
@@ -695,10 +697,11 @@ if ($q) {
 			// Travaillable
 			$date_workday = 0;
 			$floornbworkday = floor($employ['days']);
+			$ceilnbworkday = ceil($employ['days']);
 			if ($daynumofweek<=$floornbworkday) {
 				$date_workday = 1;
 			}
-			elseif ($floornbworkday<$employ['days']) {
+			elseif ($floornbworkday==$ceilnbworkday) {
 				$date_workday = $employ['days'] - $floornbworkday;
 			}
 
