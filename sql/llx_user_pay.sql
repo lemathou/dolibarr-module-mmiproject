@@ -20,4 +20,4 @@ ALTER TABLE `llx_user_pay`
 ALTER TABLE `llx_user_pay`
   ADD CONSTRAINT `lllx_user_pay_ibfk_1` FOREIGN KEY (`fk_user`) REFERENCES `lllx_user` (`rowid`);
 
-ALTER TABLE `llxsq_user_pay` ADD `decal_hsup_conge` DECIMAL(4,2) NULL DEFAULT NULL AFTER `paid_amount`, ADD `recup_hsup_conge` DECIMAL(4,2) NULL DEFAULT NULL AFTER `decal_hsup_conge`;
+ALTER TABLE `llx_user_pay` ADD `decal_hsup_conge` DECIMAL(4,2) NULL DEFAULT NULL AFTER `paid_amount`, ADD `recup_hsup_conge` DECIMAL(4,2) NULL DEFAULT NULL AFTER `decal_hsup_conge`;

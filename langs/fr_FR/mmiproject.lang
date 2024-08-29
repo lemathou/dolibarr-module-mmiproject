@@ -76,6 +76,8 @@ Extrafield_intensite = Intensité (A)
 Extrafield_acquisition_date = Date d'acquisition
 Extrafield_acquisition_price = Prix d'acquisition
 Extrafield_actual_price_value = Valeur actuelle
+Extrafield_workdaysnb = Nombre de jours travaillés par semaine
+Extrafield_dailyhours = Nombre d'heures travaillées par jour
 
 #
 # About page

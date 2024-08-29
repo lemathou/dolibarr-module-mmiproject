@@ -565,6 +565,10 @@ class modMMIProject extends DolibarrModules
 		$extrafields->addExtraField('date_livraison', $langs->trans('DeliveryDate'), 'date',  100,  "", 'facture',  0, 0, '', "", 1,'', -1, '', '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 		$extrafields->addExtraField('date_livraison_aff', $langs->trans('Extrafield_date_livraison_aff'), 'select',  100,  "", 'facture',  0, 0, '', array('options'=>array('1'=>'Prévue','2'=>'Livré')), 1,'', -1, '', '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 
+		// User
+		$extrafields->addExtraField('workdaysnb', $langs->trans('Extrafield_workdaysnb'), 'double', 100, '4,2', 'user', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_workdaysnb'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
+		$extrafields->addExtraField('dailyhours', $langs->trans('Extrafield_dailyhours'), 'double', 100, '4,2', 'user', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_dailyhours'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
+
 		// @todo conf->mmiproject->enabled à vérifier !!
 
 		// Permissions

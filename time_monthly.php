@@ -123,9 +123,10 @@ if ($user->rights->mmiproject->time->admin) {
 }
 elseif ($user->rights->mmiproject->time->user) {
 	echo '<form method="GET" action="time_monthly.php">';
-	$sql = 'SELECT *, CONCAT(`firstname`, " ", `lastname`) label
-		FROM '.MAIN_DB_PREFIX.'user
-		WHERE rowid'.$user->id;
+	$sql = 'SELECT u2.*, u.*, CONCAT(`firstname`, " ", `lastname`) AS label
+		FROM '.MAIN_DB_PREFIX.'user AS u
+		LEFT JOIN '.MAIN_DB_PREFIX.'user_extrafields AS u2 ON u2.fk_object=u.rowid
+		WHERE u.rowid'.$user->id;
 	//echo $sql;
 	$q = $db->query($sql);
 	//var_dump($q); var_dump($db);
@@ -189,7 +190,7 @@ $periode_prev_fin_date = $periode_prev_fin.'-'.$periode_prev_fin_nbdays;
 //var_dump($task_user);
 
 // Contrats de travail
-$sql = 'SELECT e.weeklyhours, e.dateemployment, e.dateemploymentend
+$sql = 'SELECT e.weeklyhours, e.workdaysnb, e.dailyhours, e.dateemployment, e.dateemploymentend
 	FROM '.MAIN_DB_PREFIX.'user_employment e
 	WHERE e.fk_user='.$task_fk_user.'
 	ORDER BY e.dateemployment';
@@ -203,7 +204,8 @@ if ($q) {
 			'begin_date' => $r['dateemployment'],
 			'end_date' => $r['dateemploymentend'],
 			'weekly' => $r['weeklyhours'],
-			'daily' => $r['weeklyhours']/5,
+			'days' => $r['workdaysnb'] ?$r['workdaysnb'] :(!empty($r['dailyhours']) ?round($r['weeklyhours']/$r['dailyhours'], 2) :5),
+			'daily' => $r['dailyhours'] ?$r['dailyhours'] :$r['weeklyhours']/($r['workdaysnb'] ?$r['workdaysnb'] :5),
 		];
 	}
 }
@@ -213,7 +215,8 @@ if (empty($employs) && !empty($user2['dateemployment'])) {
 		'begin_date' => $user2['dateemployment'],
 		'end_date' => $user2['dateemploymentend'],
 		'weekly' => $user2['weeklyhours'],
-		'daily' => $user2['weeklyhours']/5,
+		'days' => $user2['workdaysnb'] ?$user2['workdaysnb'] :(!empty($user2['dailyhours']) ?round($user2['weeklyhours']/$user2['dailyhours'], 2) :5),
+		'daily' => $user2['dailyhours'] ?$user2['dailyhours'] :$user2['weeklyhours']/($user2['workdaysnb'] ?$user2['workdaysnb'] :5),
 	];
 }
 //var_dump($employs); die();
@@ -221,8 +224,10 @@ if (empty($employs) && !empty($user2['dateemployment'])) {
 // Valeurs par défaut
 // Nb par semaine
 $weekly = $task_user->weeklyhours;
+// Nb jours travaillés
+$days = !empty($task_user->array_options['options_workdaysnb']) ?$task_user->array_options['options_workdaysnb'] :(!empty($task_user->array_options['options_dailyhours']) ?round($task_user->weeklyhours/$task_user->array_options['options_dailyhours'], 2) :5);
 // Nb h travaillées par jour
-$daily = $weekly/5;
+$daily = !empty($task_user->array_options['options_dailyhours']) ?$task_user->array_options['options_dailyhours'] :round($weekly/$days, 2);
 // Seuil Heures +25%
 $weekly1 = 35;
 // Seuil Heures +50%
