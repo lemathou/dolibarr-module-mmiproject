@@ -556,7 +556,7 @@ $duree_tot = 0;
         </td>
     </tr>
     <tr>
-        <td style="border-top: 0;">Tâche :</td>
+        <td style="text-align: right;border-top: 0;">Tâche :</td>
         <td colspan="4" style="border-top: 0;" data-fk-task="<?php echo $task['rowid']; ?>"><?php echo '<a href="/projet/tasks/time.php?id='.$task['rowid'].'">'.$task['label'].'</a>'; ?></td>
     </tr>
 <?php } ?>
@@ -576,13 +576,13 @@ $duree_tot = 0;
         <td colspan="7" style="border: 0;padding: 0 5px;">Ajouter une tâche</td>
     </tr>
     <tr>
-        <td rowspan="2"><input id="begin_hour" name="begin_hour" type="text" size="5" value="<?php echo isset($datefin) ?$datefin :'00:00'; ?>" style="text-align: right; border: 0;padding: 0;" /></td>
-        <td rowspan="2"><input id="end_hour" name="end_hour" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
+        <td rowspan="3"><input id="begin_hour" name="begin_hour" type="text" size="5" value="<?php echo isset($datefin) ?$datefin :'00:00'; ?>" style="text-align: right; border: 0;padding: 0;" /></td>
+        <td rowspan="3"><input id="end_hour" name="end_hour" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
         <td><input id="duration" name="duration" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
         <td>Utilisateurs listés en en-tête</td>
     </tr>
     <tr>
-        <td>Tâche :</td>
+        <td style="text-align: right;">Tâche :</td>
         <td colspan="4"><?php
         
         $tasks_form = [];
@@ -608,9 +608,9 @@ $duree_tot = 0;
         ?></td>
     </tr>
     <tr>
-        <td colspan="4">Commentaire (optionnel) :</td>
+        <td width="50" style="text-align: right;">Commentaire (optionnel) :</td>
         <td colspan="2"><textarea name="timespent_note" style="width: 100%;"></textarea></td>
-        <td style="text-align: center;"><input name="_add" type="submit" value="Ajouter" /></td>
+        <td style="text-align: center;padding: 5px;border:0;"><input name="_add" type="submit" value="Ajouter" /></td>
     </tr>
 </tbody>
 </table>
