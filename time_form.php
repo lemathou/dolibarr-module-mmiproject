@@ -187,6 +187,8 @@ $date_after_dmy = date('d/m/Y', $time+86400);
 $year = substr($date, 0, 4);
 $month = substr($date, 5, 2);
 $day = substr($date, 8, 2);
+$dayofweek = date('w', $time);
+$daynameofweek = getDayName($dayofweek);
 
 // Voir le travail de tous les utilisateurs
 $users_all = GETPOST('users_all', 'bool');
@@ -338,6 +340,9 @@ $form = new Form($db);
 $(document).ready(function(){
     $('#form_add').each(function(){
         var changed_last;
+        $('#date', this).change(function(){
+            $(this).submit();
+        });
         $('#begin_hour, #end_hour, #duration', this).change(function(){
             var changed = $(this).attr('id');
             //alert(changed);
@@ -466,7 +471,7 @@ function parseTime2(t)
 </tr>
 <tr>
 	<td>
-		<p><?php echo $form->selectDate($date, 'date', '', '', '', '', 1, 1); //$date; ?></p>
+		<p><span id="daynameofweek" style="padding: 0 5px;"><?php echo $daynameofweek; ?></span><?php echo $form->selectDate($date, 'date', '', '', '', '', 1, 1); //$date; ?></p>
 		<p style="text-align: center;"><a href="javascript:;" onclick="$('#date').val('<?php echo $date_before_dmy; ?>').change();$('#refresh').click();">&lt;</a>&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:;" onclick="$('#date').val('<?php echo $date_after_dmy; ?>').change();$('#refresh').click();">&gt;</a></p>
 	</td>
 	<td><?php
@@ -495,6 +500,7 @@ function parseTime2(t)
 
 <br />
 
+<h3>Tâches avec du temps sur la journée</h3>
 <table border="1">
 <thead>
     <tr>
@@ -502,7 +508,6 @@ function parseTime2(t)
         <th>Heure<br />fin</th>
         <th>Durée</th>
         <td>Utilisateur</td>
-        <th>Tâche</th>
         <th>Projet</th>
         <th>Info.</th>
         <?php
@@ -534,11 +539,10 @@ $duree_tot = 0;
     $time_useradd = empty(array_intersect($userids, $time_day2[$row['element_datehour'].'-'.$row['element_duration'].'-'.$row['fk_element']]['userids']));
     ?>
     <tr>
-        <td class="begin_hour" align="right"><?php if ($datenew) echo substr($row['element_datehour'], 11, 5); ?></td>
-        <td class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['element_datehour'])+$row['element_duration']); ?></td>
+        <td rowspan="2" class="begin_hour" align="right"><?php if ($datenew) echo substr($row['element_datehour'], 11, 5); ?></td>
+        <td rowspan="2" class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['element_datehour'])+$row['element_duration']); ?></td>
         <td class="duration" align="right"><?php if ($datenew) echo $duree; ?></td>
         <td><?php echo $users[$row['fk_user']]['name']; ?></td>
-        <td data-fk-task="<?php echo $task['rowid']; ?>"><?php echo '<a href="/projet/tasks/time.php?id='.$task['rowid'].'">'.$task['label'].'</a>'; ?></td>
         <td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid=7?id='.$project['rowid'].'">'.$project['title'].'</a>'; ?></td>
         <td><?php if (!empty($row['note'])) echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; ?></td>
         <td>
@@ -550,6 +554,10 @@ $duree_tot = 0;
             <input class="duplicate" type="button" value="Dupliquer" />
             <?php } ?>
         </td>
+    </tr>
+    <tr>
+        <td style="border-top: 0;">Tâche :</td>
+        <td colspan="4" style="border-top: 0;" data-fk-task="<?php echo $task['rowid']; ?>"><?php echo '<a href="/projet/tasks/time.php?id='.$task['rowid'].'">'.$task['label'].'</a>'; ?></td>
     </tr>
 <?php } ?>
 <?php if(!empty($duree_tot)) {
@@ -565,11 +573,17 @@ $duree_tot = 0;
     </tr>
 <?php } ?>
     <tr>
-        <td><input id="begin_hour" name="begin_hour" type="text" size="5" value="<?php echo isset($datefin) ?$datefin :'00:00'; ?>" style="text-align: right; border: 0;padding: 0;" /></td>
-        <td><input id="end_hour" name="end_hour" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
+        <td colspan="7" style="border: 0;padding: 0 5px;">Ajouter une tâche</td>
+    </tr>
+    <tr>
+        <td rowspan="2"><input id="begin_hour" name="begin_hour" type="text" size="5" value="<?php echo isset($datefin) ?$datefin :'00:00'; ?>" style="text-align: right; border: 0;padding: 0;" /></td>
+        <td rowspan="2"><input id="end_hour" name="end_hour" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
         <td><input id="duration" name="duration" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
         <td>Utilisateurs listés en en-tête</td>
-        <td colspan="2"><?php
+    </tr>
+    <tr>
+        <td>Tâche :</td>
+        <td colspan="4"><?php
         
         $tasks_form = [];
         //var_dump($projects);
@@ -596,8 +610,7 @@ $duree_tot = 0;
     <tr>
         <td colspan="4">Commentaire (optionnel) :</td>
         <td colspan="2"><textarea name="timespent_note" style="width: 100%;"></textarea></td>
-        <td style="border:0;"></td>
-        <td style="border:0;"><input name="_add" type="submit" value="Ajouter" /></td>
+        <td style="text-align: center;"><input name="_add" type="submit" value="Ajouter" /></td>
     </tr>
 </tbody>
 </table>
