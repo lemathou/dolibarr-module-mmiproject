@@ -1303,7 +1303,7 @@ if (!empty($weeks_aff)) {
 if (!empty($month_aff)) {
 	echo '<p>Attention, les RTT ne sont volontairement pas ajoutées au delta, en effet, l\'idée est justement de les utiliser pour abaisser ce dernier !</p>';
 	if (!empty($hsup_prev_decale)) {
-		echo '<p><b style="color: red;">Heures sup décalées depuis l\'exercice précédent : '.$hsup_prev_decale.' / Prises en RCR : '.$hsup_prev_rcr_pris.' / Reste à prendre si besoin : '. $hsup_prev_decale_reste.'</b></p>';
+		echo '<p><b style="color: red;">Heures décalées depuis l\'exercice précédent : '.$hsup_prev_decale.' / Posées en RCR : '.$hsup_prev_rcr_pris.' / Reste à poser : '. $hsup_prev_decale_reste.'</b></p>';
 	}
 	echo '<table border="1" cellpadding="2" id="cumul_mois">';
 	echo '<caption>Récap mois</caption>';
@@ -1325,8 +1325,8 @@ if (!empty($month_aff)) {
 		echo '<th>RCR</th>';
 	echo '<th>Maladie</th>';
 	echo '<th>Autre</th>';
-	echo '<th>H.Sup<br />Payées</th>';
-	echo '<th>H.Sup<br />Décalées</th>';
+	echo '<th>H.<br />Payées</th>';
+	echo '<th>H.<br />Décalées</th>';
 
 	echo '<td></td>';
 	echo '<th>Effectif<br />(Trav+Dépl+Form)</th>';
@@ -1369,8 +1369,8 @@ if (!empty($month_aff)) {
 		echo '<td>'.duration_aff($r['arret_maladie']).'</p>';
 		echo '<td>'.duration_aff($r['arret_autre']).'</p>';
 		if ($right_contract_all) {
-			echo '<td><input class="hsup" value="'.duration_aff($r['hsup']).'" size="2" /></p>';
-			echo '<td><input class="decal_hsup_conge" value="'.duration_aff($r['decal_hsup_conge']).'" size="2" /></p>';
+			echo '<td><input class="hsup" value="'.duration_aff($r['hsup']).'" size="3" /></p>';
+			echo '<td><input class="decal_hsup_conge" value="'.duration_aff($r['decal_hsup_conge']).'" size="3" /></p>';
 		}
 		else {
 			echo '<td>'.duration_aff($r['hsup']).'</p>';
