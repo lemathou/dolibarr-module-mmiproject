@@ -6,21 +6,25 @@ $ref = GETPOST('ref', 'alpha');
 $job = GETPOST('job', 'alpha');
 $salary = GETPOST('salary', 'double');
 $weeklyhours = GETPOST('weeklyhours', 'double');
+$dailyhours = GETPOST('dailyhours', 'double');
+$workdaysnb = GETPOST('workdaysnb', 'int');
+$workdays = GETPOST('workdays', 'array:int');
+$workdays2 = GETPOST('workdays2', 'array:int');
 $dateemployment = GETPOST('dateemployment', 'date');
 $dateemploymentend = GETPOST('dateemploymentend', 'date');
 
 if ($action == 'contract_add') {
 	$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'user_employment
-		(`fk_user`, `status`, `ref`, `job`, `salary`, `weeklyhours`, `dateemployment`, `dateemploymentend`)
+		(`fk_user`, `status`, `ref`, `job`, `salary`, `weeklyhours`, `dailyhours`, `workdaysnb`, `workdays`, `workdays2`, `dateemployment`, `dateemploymentend`)
 		VALUES
-		('.$id.', "'.$status.'", "'.$ref.'", "'.$job.'", '.(is_numeric($salary) ?'"'.$salary.'"' :'NULL').', '.(is_numeric($weeklyhours) ?'"'.$weeklyhours.'"' :'NULL').', '.(!empty($dateemployment) ?'"'.$dateemployment.'"' :'NULL').', '.(!empty($dateemploymentend) ?'"'.$dateemploymentend.'"' :'NULL').')';
+		('.$id.', "'.$status.'", "'.$ref.'", "'.$job.'", '.(is_numeric($salary) ?'"'.$salary.'"' :'NULL').', '.(is_numeric($weeklyhours) ?'"'.$weeklyhours.'"' :'NULL').', '.(is_numeric($dailyhours) ?'"'.$dailyhours.'"' :'NULL').', '.(is_numeric($workdaysnb) ?'"'.$workdaysnb.'"' :'NULL').', '.(!empty($workdays) ?'"'.implode(',', $workdays).'"' :'NULL').', '.(!empty($workdays2) ?'"'.implode(',', $workdays2).'"' :'NULL').', '.(!empty($dateemployment) ?'"'.$dateemployment.'"' :'NULL').', '.(!empty($dateemploymentend) ?'"'.$dateemploymentend.'"' :'NULL').')';
 	//, `fk_c_type_resource`
 	$db->query($sql);
 }
 
 if ($action == 'contract_edit') {
 	$sql = 'UPDATE '.MAIN_DB_PREFIX.'user_employment
-		SET `status`="'.$status.'", `ref`="'.$ref.'", `job`="'.$job.'", `salary`='.(is_numeric($salary) ?'"'.$salary.'"' :'NULL').', `weeklyhours`='.(is_numeric($weeklyhours) ?'"'.$weeklyhours.'"' :'NULL').', `dateemployment`='.(!empty($dateemployment) ?'"'.$dateemployment.'"' :'NULL').', `dateemploymentend`='.(!empty($dateemploymentend) ?'"'.$dateemploymentend.'"' :'NULL').'
+		SET `status`="'.$status.'", `ref`="'.$ref.'", `job`="'.$job.'", `salary`='.(is_numeric($salary) ?'"'.$salary.'"' :'NULL').', `weeklyhours`='.(is_numeric($weeklyhours) ?'"'.$weeklyhours.'"' :'NULL').', `dailyhours`='.(is_numeric($dailyhours) ?'"'.$dailyhours.'"' :'NULL').', `workdaysnb`='.(is_numeric($workdaysnb) ?'"'.$workdaysnb.'"' :'NULL').', `workdays`='.(!empty($workdays) ?'"'.implode(',', $workdays).'"' :'NULL').', `workdays2`='.(!empty($workdays2) ?'"'.implode(',', $workdays2).'"' :'NULL').', `dateemployment`='.(!empty($dateemployment) ?'"'.$dateemployment.'"' :'NULL').', `dateemploymentend`='.(!empty($dateemploymentend) ?'"'.$dateemploymentend.'"' :'NULL').'
 		WHERE rowid='.$link_id.'';
 		//, `fk_c_type_resource`='.$fk_c_type_resource.'
 	$db->query($sql);
@@ -40,6 +44,10 @@ if (!empty($edit)) {
 	//echo $sql;
 	$q = $db->query($sql);
 	$link = $q->fetch_assoc();
+	if (!empty($link['workdays']))
+		$link['workdays'] = explode(',', $link['workdays']);
+	if (!empty($link['workdays2']))
+		$link['workdays2'] = explode(',', $link['workdays2']);
 }
 
 $contracts = [];

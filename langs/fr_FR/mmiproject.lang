@@ -77,6 +77,8 @@ Extrafield_acquisition_date = Date d'acquisition
 Extrafield_acquisition_price = Prix d'acquisition
 Extrafield_actual_price_value = Valeur actuelle
 Extrafield_workdaysnb = Nombre de jours travaillés par semaine
+Extrafield_workdays = Jours de la semaine travaillés (semaines impaires)
+Extrafield_workdays2 = Jours de la semaine travaillés (semaines paires)
 Extrafield_dailyhours = Nombre d'heures travaillées par jour
 
 #
@@ -151,6 +153,7 @@ ResourceType = Type de ressource
 Rental = Location
 DeliveryDate = Date de livraison
 DateDeliveryPlanned = Date de livraison prévue
+DailyWorkedHours = Heures travaillées par jour
 
 MMIProjectOrderLocked = Un projet est rattaché à cette commande, il n'est donc pas possible de l'annuler ou la supprimer
 

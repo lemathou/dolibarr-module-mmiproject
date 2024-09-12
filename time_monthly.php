@@ -112,11 +112,11 @@ if ($user->rights->mmiproject->time->admin) {
 		}
 	}
 	echo '</select>';
-	echo '<input type="checkbox" name="holidays_aff" value="1"'.(!empty($holidays_aff) ?' checked' :'').' /> Afficher fériés';
-	echo '<input type="checkbox" name="cp_aff" value="1"'.(!empty($cp_aff) ?' checked' :'').' /> Afficher CP';
-	echo '<input type="checkbox" name="weeks_aff" value="1"'.(!empty($weeks_aff) ?' checked' :'').' /> Afficher cumul semaines';
-	echo '<input type="checkbox" name="month_aff" value="1"'.(!empty($month_aff) ?' checked' :'').' /> Afficher cumul mois';
-	echo '<input type="checkbox" name="more_aff" value="1"'.(!empty($more_aff) ?' checked' :'').' /> Afficher +';
+	echo '<input id="holidays_aff" type="checkbox" name="holidays_aff" value="1"'.(!empty($holidays_aff) ?' checked' :'').' /> <label for="holidays_aff">Afficher fériés</label>';
+	echo '<input id="cp_aff" type="checkbox" name="cp_aff" value="1"'.(!empty($cp_aff) ?' checked' :'').' /> <label for="cp_aff">Afficher CP</label>';
+	echo '<input id="weeks_aff" type="checkbox" name="weeks_aff" value="1"'.(!empty($weeks_aff) ?' checked' :'').' /> <label for="weeks_aff">Afficher cumul semaines</label>';
+	echo '<input id="month_aff" type="checkbox" name="month_aff" value="1"'.(!empty($month_aff) ?' checked' :'').' /> <label for="month_aff">Afficher cumul mois</label>';
+	echo '<input id="more_aff" type="checkbox" name="more_aff" value="1"'.(!empty($more_aff) ?' checked' :'').' /> <label for="more_aff">Afficher +</label>';
 	echo '<input type="submit" value="Afficher" />';
 	echo '<hr />';
 	echo '</form>';
@@ -190,7 +190,7 @@ $periode_prev_fin_date = $periode_prev_fin.'-'.$periode_prev_fin_nbdays;
 //var_dump($task_user);
 
 // Contrats de travail
-$sql = 'SELECT e.weeklyhours, e.workdaysnb, e.dailyhours, e.dateemployment, e.dateemploymentend
+$sql = 'SELECT e.*
 	FROM '.MAIN_DB_PREFIX.'user_employment e
 	WHERE e.fk_user='.$task_fk_user.'
 	ORDER BY e.dateemployment';
@@ -204,22 +204,105 @@ if ($q) {
 			'begin_date' => $r['dateemployment'],
 			'end_date' => $r['dateemploymentend'],
 			'weekly' => $r['weeklyhours'],
-			'days' => $r['workdaysnb'] ?$r['workdaysnb'] :(!empty($r['dailyhours']) ?round($r['weeklyhours']/$r['dailyhours'], 2) :5),
+			'daysnb' => $r['workdaysnb'] ?$r['workdaysnb'] :(!empty($r['dailyhours']) ?round($r['weeklyhours']/$r['dailyhours'], 2) :5),
+			'days' => !empty($r['workdays']) ?explode(',', $r['workdays']) :NULL,
+			'days2' => !empty($r['workdays2']) ?explode(',', $r['workdays2']) :NULL,
 			'daily' => $r['dailyhours'] ?$r['dailyhours'] :$r['weeklyhours']/($r['workdaysnb'] ?$r['workdaysnb'] :5),
 		];
 	}
 }
 $user2 = $users[$task_fk_user];
+// @todo @depreacated : use contracts !
 if (empty($employs) && !empty($user2['dateemployment'])) {
 	$employs[$user2['dateemployment']] = [
 		'begin_date' => $user2['dateemployment'],
 		'end_date' => $user2['dateemploymentend'],
 		'weekly' => $user2['weeklyhours'],
-		'days' => $user2['workdaysnb'] ?$user2['workdaysnb'] :(!empty($user2['dailyhours']) ?round($user2['weeklyhours']/$user2['dailyhours'], 2) :5),
+		'daysnb' => $user2['workdaysnb'] ?$user2['workdaysnb'] :(!empty($user2['dailyhours']) ?round($user2['weeklyhours']/$user2['dailyhours'], 2) :5),
+		'days' => NULL,
+		'days2' => NULL,
 		'daily' => $user2['dailyhours'] ?$user2['dailyhours'] :$user2['weeklyhours']/($user2['workdaysnb'] ?$user2['workdaysnb'] :5),
 	];
 }
+if (!empty($employs)) foreach($employs as $r) {
+	$defaultemploy = $r;
+	break;
+}
+else {
+	$defaultemploy = ['weekly'=>$weekly, 'daily'=>$daily];
+}
 //var_dump($employs); die();
+
+/**
+ * Update employment contract user for a specific date
+ * @return boolean date covered by employ, if false we can stop process
+ */
+function employ_check(&$employs, &$employ, $ddate, &$r=NULL)
+{
+	// Begin contract
+	if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+		return false;
+	}
+	// Change contract
+	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
+		$employ_ok = false;
+		foreach($employs as $emp) {
+			if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
+				$employ = $emp;
+				$employ_ok = true;
+				if(is_array($r)) {
+					$r['employ'] = $employ;
+				}
+				break;
+			}
+		}
+		if (!$employ_ok)
+			return false;
+	}
+
+	return true;
+}
+
+/**
+ * Jour travaillable
+ * @param Array $emploi contrat de travail
+ * @param String $day jour testé (ISO YYYY-mm-dd)
+ * @return float Qté de jour travaillable le jour $day donnée selon le contrat $employ (1 = une journée, 0.5 = 1/2 journée, 0 = pas travaillable)
+ */
+function date_workday($employ, $day)
+{
+	$ldate = strtotime($day);
+	$daynumofweek = date('w', $ldate);
+
+	// Default
+	$date_workday = 0;
+
+	// Days worked in the week
+	if (!empty($employ['days']) || !empty($employ['days2'])) {
+		$weeknum = date('W', $ldate);
+		if ($weeknum%2 == 1) {
+			if (in_array($daynumofweek, $employ['days']))
+				$date_workday = 1;
+		}
+		else {
+			if (in_array($daynumofweek, $employ['days2']))
+				$date_workday = 1;
+		}
+	}
+	elseif (!empty($employ['daysnb'])) {
+		$floornbworkday = floor($employ['daysnb']);
+		$ceilnbworkday = ceil($employ['daysnb']);
+
+		if ($daynumofweek<=$floornbworkday) {
+			$date_workday = 1;
+		}
+		elseif ($daynumofweek<=$ceilnbworkday) {
+			$date_workday = $employ['daysnb'] - $floornbworkday;
+		}
+	}
+
+	return $date_workday;
+}
 
 // Valeurs par défaut
 // Nb par semaine
@@ -307,13 +390,7 @@ for($i=1;$i<=$periode_fin_weeknum;$i++) {
 	$cumul_week[$periode_year_fin.'-'.$i]['dates'] = getStartAndEndDate($i, $periode_year_fin);
 }
 
-if (!empty($employs)) foreach($employs as $r) {
-	$employ = $r;
-	break;
-}
-else {
-	$employ = ['weekly'=>$weekly, 'daily'=>$daily];
-}
+$employ = $defaultemploy;
 //var_dump($employ); die();
 foreach($cumul_week as &$r) {
 	$r['nbferies'] = 0;
@@ -323,7 +400,7 @@ foreach($cumul_week as &$r) {
 	$d = 0;
 	for ($i=0;$i<=6;$i++) {
 		$ldate = strtotime($r['dates']['week_start'])+$i*86400;
-		$daynumofweek = $i;
+		$daynumofweek = ($i==6 ?0 :($i+1));
 		$ddate = date('Y-m-d', $ldate);
 		$isferie = in_array($ddate, $holidays);
 		if ($isferie && $ddate!=$soliday)
@@ -332,37 +409,14 @@ foreach($cumul_week as &$r) {
 			$r['nbferiesdim']++;
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
-		$r['nbworkdays']++;
 
-		// Begin contract
-		if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+		if (! employ_check($employs, $employ, $ddate))
 			continue;
-		}
-		// Change contract
-		//var_dump($employ['end_date'], $ddate, $employ['end_date'] <= $ddate); echo '<br />';
-		if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-			$employ_ok = false;
-			foreach($employs as $emp) {
-				if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-					$employ = $emp;
-					$employ_ok = true;
-					break;
-				}
-			}
-			if (!$employ_ok)
-				continue;
-		}
 
 		// Travaillable
-		$date_workday = 0;
-		$floornbworkday = floor($employ['days']);
-		$ceilnbworkday = ceil($employ['days']);
-		if ($daynumofweek<=$floornbworkday) {
-			$date_workday = 1;
-		}
-		elseif ($daynumofweek<=$ceilnbworkday) {
-			$date_workday = $employ['days'] - $floornbworkday;
-		}
+		$date_workday = date_workday($employ, $ddate);
+
+		$r['nbworkdays'] += $date_workday;
 		$r['weekly'] += $date_workday*$employ['daily'];
 	}
 	//var_dump($r);
@@ -394,13 +448,7 @@ for($i=1;$i<=$periode_mois_fin;$i++) {
 
 // Jours par mois
 
-if (!empty($employs)) foreach($employs as $r) {
-	$employ = $r;
-	break;
-}
-else {
-	$employ = ['weekly'=>$weekly, 'daily'=>$daily];
-}
+$employ = $defaultemploy;
 foreach($cumul_mois as &$r) {
 	$r['nbdays'] = cal_days_in_month(CAL_GREGORIAN, $r['month'], $r['year']);
 	$r['nbferies'] = 0;
@@ -420,34 +468,13 @@ foreach($cumul_mois as &$r) {
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
 
-		// Begin contract
-		if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+		if (! employ_check($employs, $employ, $ddate, $r))
 			continue;
-		}
-		// Change contract
-		if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-			$employ_ok = false;
-			foreach($employs as $emp) {
-				if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-					$employ = $emp;
-					$employ_ok = true;
-					$r['employ'] = $employ;
-					break;
-				}
-			}
-			if (!$employ_ok)
-				continue;
-		}
 
 		// Jour travaillable
-		$floornbworkday = floor($employ['days']);
-		$ceilnbworkday = ceil($employ['days']);
-		if ($daynumofweek<=$floornbworkday) {
-			$d += $date_workday = 1;
-		}
-		elseif ($daynumofweek<=$ceilnbworkday) {
-			$d += $date_workday = $employ['days'] - $floornbworkday;
-		}
+		$date_workday = date_workday($employ, $ddate);
+
+		$d += $date_workday;
 		$r['monthly'] += $date_workday*$employ['daily'];
 
 		// CP pris/heures à faire en fct du contrat...
@@ -482,13 +509,7 @@ $lastday = $year_month .'-'.$month_number;
 $month_workdays = 0;
 
 // Jours de Congés & co du mois
-if (!empty($employs)) foreach($employs as $r) {
-	$employ = $r;
-	break;
-}
-else {
-	$employ = ['weekly'=>$weekly, 'daily'=>$daily];
-}
+$employ = $defaultemploy;
 $l = [];
 for ($i=1;$i<=$month_number;$i++) {
 	$ldate = mktime(0, 0, 0, $month, $i, $year);
@@ -496,36 +517,17 @@ for ($i=1;$i<=$month_number;$i++) {
 	$daynumofweek = date('w', $ldate);
 	$isferie = in_array($ddate, $holidays) || $daynumofweek==0;
 
-	// Begin contract
-	if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+	if (! employ_check($employs, $employ, $ddate))
 		continue;
-	}
-	// Change contract
-	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-		$employ_ok = false;
-		foreach($employs as $emp) {
-			if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-				$employ = $emp;
-				$employ_ok = true;
-				break;
-			}
-		}
-		if (!$employ_ok)
-			continue;
-	}
 
 	// Travaillable
 	$date_workday = 0;
+	
 	if (!($isferie && $ddate!=$soliday) && !in_array($daynumofweek, [0,6])) {
-		$floornbworkday = floor($employ['days']);
-		$ceilnbworkday = ceil($employ['days']);
-		if ($daynumofweek<=$floornbworkday) {
-			$month_workdays += $date_workday = 1;
-		}
-		elseif ($daynumofweek<=$ceilnbworkday) {
-			$month_workdays += $date_workday = $employ['days'] - $floornbworkday;
-		}
+		$date_workday = date_workday($employ, $ddate);
 	}
+	
+	$month_workdays += $date_workday;
 
 	$l[$ddate] = array_merge([
 		'ldate' => $ldate,
@@ -543,13 +545,7 @@ for ($i=1;$i<=$month_number;$i++) {
 
 // Assignation fériés ouvrés
 
-if (!empty($employs)) foreach($employs as $r) {
-        $employ = $r;
-        break;
-}
-else {
-        $employ = ['weekly'=>$weekly, 'daily'=>$daily];
-}
+$employ = $defaultemploy;
 foreach($holidays as $ddate) {
 	$ldate = strtotime($ddate);
 	$weeknum = date('W', $ldate);
@@ -560,33 +556,13 @@ foreach($holidays as $ddate) {
 	// Samedi/Dimanche ou journée de solidarité => pas férié payé
 	if (in_array($daynumofweek, [0, 6]) || $ddate==$soliday)
 		continue;
-	// Begin contract
-	if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+
+	if (! employ_check($employs, $employ, $ddate))
 		continue;
-	}
-	// Change contract
-	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-		$employ_ok = false;
-		foreach($employs as $emp) {
-			if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-				$employ = $emp;
-				$employ_ok = true;
-				break;
-			}
-		}
-		if (!$employ_ok)
-			continue;
-	}
+
 	// Travaillable
-	$date_workday = 0;
-	$floornbworkday = floor($employ['days']);
-	$ceilnbworkday = ceil($employ['days']);
-	if ($daynumofweek<=$floornbworkday) {
-		$date_workday = 1;
-	}
-	elseif ($daynumofweek<=$ceilnbworkday) {
-		$date_workday = $employ['days'] - $floornbworkday;
-	}
+	$date_workday = date_workday($employ, $ddate);
+
 	if ($lmonth==$month)
 		$l[$ddate]['ferie_duration'] = $date_workday*$employ['daily'];
 	$cumul_week[$lyear.'-'.$weeknum]['ferie_duration'] += $date_workday*$employ['daily'];
@@ -635,13 +611,7 @@ if ($q) {
 
 
 // Jours de Congés & co du mois
-if (!empty($employs)) foreach($employs as $r) {
-	$employ = $r;
-	break;
-}
-else {
-	$employ = ['weekly'=>$weekly, 'daily'=>$daily];
-}
+$employ = $defaultemploy;
 $sql = 'SELECT h.date_debut, h.date_fin, h.fk_type
 FROM '.MAIN_DB_PREFIX.'holiday h
 WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
@@ -687,37 +657,15 @@ if ($q) {
 			$daynumofweek = date('w', $ldate);
 			//var_dump($ddate);
 
-			// Begin contract
-			if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+			if (! employ_check($employs, $employ, $ddate))
 				continue;
-			}
-			// Change contract
-			if (!empty($employ['end_date']) && $employ['end_date'] < $ddate) {
-				$employ_ok = false;
-				foreach($employs as $emp) {
-					if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-						$employ = $emp;
-						$employ_ok = true;
-						break;
-					}
-				}
-				if (!$employ_ok)
-					continue;
-			}
+
 			// Jour férié, samedi, dimanche => pas comptabilisé
 			if (in_array($ddate, $holidays) || in_array($daynumofweek, [0, 6]))
 				continue;
 
 			// Travaillable
-			$date_workday = 0;
-			$floornbworkday = floor($employ['days']);
-			$ceilnbworkday = ceil($employ['days']);
-			if ($daynumofweek<=$floornbworkday) {
-				$date_workday = 1;
-			}
-			elseif ($daynumofweek<=$ceilnbworkday) {
-				$date_workday = $employ['days'] - $floornbworkday;
-			}
+			$date_workday = date_workday($employ, $ddate);
 
 			$l[$ddate]['arret_'.$type] = $date_workday*$employ['daily'];
 			//var_dump($l[$ddate]['arret_'.$type]);
@@ -830,13 +778,7 @@ if ($q) {
 // Cumul congés par mois et semaines
 
 
-if (!empty($employs)) foreach($employs as $r) {
-	$employ = $r;
-	break;
-}
-else {
-	$employ = ['weekly'=>$weekly, 'daily'=>$daily];
-}
+$employ = $defaultemploy;
 $sql = 'SELECT h.date_debut, h.date_fin, h.fk_type, ht.code
 FROM '.MAIN_DB_PREFIX.'holiday h
 INNER JOIN '.MAIN_DB_PREFIX.'c_holiday_types ht ON ht.rowid=h.fk_type
@@ -920,38 +862,17 @@ if ($q) {
 			$daynumofweek = date('w', $ldate);
 			$weeknum = date('W', $ldate);
 			$ddate = $day;
-			// Begin contract
-			if (!empty($employ['begin_date']) && $ddate < $employ['begin_date']) {
+
+			if (! employ_check($employs, $employ, $ddate))
 				continue;
-			}
-			// Change contract
-			if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
-				$employ_ok = false;
-				foreach($employs as $emp) {
-					if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
-						$employ = $emp;
-						$employ_ok = true;
-						break;
-					}
-				}
-				if (!$employ_ok)
-					continue;
-			}
+
 			// Samedi, Dimanche, Férie => on compte pas
 			if (in_array($day, $holidays) || in_array($daynumofweek, [0, 6]))
 				continue;
 
 
 			// Travaillable
-			$date_workday = 0;
-			$floornbworkday = floor($employ['days']);
-			$ceilnbworkday = ceil($employ['days']);
-			if ($daynumofweek<=$floornbworkday) {
-				$date_workday = 1;
-			}
-			elseif ($daynumofweek<=$ceilnbworkday) {
-				$date_workday = $employ['days'] - $floornbworkday;
-			}
+			$date_workday = date_workday($employ, $ddate);
 
 			$cumul_mois[substr($day, 0, 7)]['arret_'.$type] += $date_workday*$employ['daily'];
 			$cumul_mois[substr($day, 0, 7)]['arret_'.$type.'_j'] += $date_workday;
