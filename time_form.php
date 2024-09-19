@@ -577,7 +577,7 @@ $duree_tot = 0;
     </tr>
     <tr>
         <td rowspan="3"><input id="begin_hour" name="begin_hour" type="text" size="5" value="<?php echo isset($datefin) ?$datefin :'00:00'; ?>" style="text-align: right; border: 0;padding: 0;" /></td>
-        <td rowspan="3"><input id="end_hour" name="end_hour" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
+        <td rowspan="3"><input id="end_hour" name="end_hour" type="text" size="5" value="<?php echo isset($datefin) ?date('H:i') :'00:00'; ?>" style="text-align: right; border: 0;padding: 0;" /></td>
         <td><input id="duration" name="duration" type="text" size="5" value="00:00" style="text-align: right; border: 0;padding: 0;" /></td>
         <td>Utilisateurs listés en en-tête</td>
     </tr>
