@@ -28,11 +28,17 @@ require_once '../main_load.inc.php';
 
 // Parameters
 $arrayofparameters = array(
+	'MMIPROJECT_TIME'=>array('type'=>'separator','enabled'=>1),
 	'PROJECT_ADDTIMESPENT_MULTIPLE_USERID'=>array('type'=>'yesno', 'enabled'=>1),
 	'MMIPROJECT_SOLIDAY'=>array('type'=>'date', 'enabled'=>1),
+
+	'MMIPROJECT_DECENNALE'=>array('type'=>'separator','enabled'=>1),
 	'MMIPROJECT_DECENNALE_FIELD'=>array('type'=>'yesno', 'enabled'=>1),
 	'MMIPROJECT_DECENNALE_TITLE'=>array('type'=>'yesno', 'enabled'=>1),
 	'MMIPROJECT_DECENNALE_TEXT'=>array('type'=>'textarea', 'enabled'=>1),
+
+	'MMIPROJECT_TASKS'=>array('type'=>'separator','enabled'=>1),
+	'TASK_SHOW_PARENT_LABEL'=>array('type'=>'yesno', 'enabled'=>1),
 );
 
 require_once('../../mmicommon/admin/mmisetup_1.inc.php');
