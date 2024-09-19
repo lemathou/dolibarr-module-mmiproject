@@ -42,6 +42,7 @@ MMIPROJECT_TASKS = Gestion des tâches
 TASK_SHOW_PARENT_LABEL = Afficher le label de la tâche parente dans la tâche
 PROJECT_ALLOW_COMMENT_ON_PROJECT = Commentaires sur les projets
 PROJECT_ALLOW_COMMENT_ON_TASK = Commentaires sur les tâches
+TASK_CREATE_WITHOUT_DEFAULT_CONTACT = Ne pas assigner de contact par défaut à la création d'une tâche
 
 #
 # ExtraFields

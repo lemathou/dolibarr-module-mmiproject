@@ -41,6 +41,7 @@ $arrayofparameters = array(
 	'TASK_SHOW_PARENT_LABEL'=>array('type'=>'yesno', 'enabled'=>1),
 	'PROJECT_ALLOW_COMMENT_ON_PROJECT'=>array('type'=>'yesno','enabled'=>1),
 	'PROJECT_ALLOW_COMMENT_ON_TASK'=>array('type'=>'yesno','enabled'=>1),
+	'TASK_CREATE_WITHOUT_DEFAULT_CONTACT'=>array('type'=>'yesno','enabled'=>1),
 );
 
 require_once('../../mmicommon/admin/mmisetup_1.inc.php');
