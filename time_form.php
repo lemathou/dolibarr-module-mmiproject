@@ -523,6 +523,7 @@ function parseTime2(t)
 <tbody>
 <?php
 $duree_tot = 0;
+$info_list = [];
 ?>
 <?php foreach($time_day as $row) {
     $task = $tasks[$row['fk_element']];
@@ -544,7 +545,7 @@ $duree_tot = 0;
         <td class="duration" align="right"><?php if ($datenew) echo $duree; ?></td>
         <td><?php echo $users[$row['fk_user']]['name']; ?></td>
         <td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid=7?id='.$project['rowid'].'">'.$project['title'].'</a>'; ?></td>
-        <td><?php if (!empty($row['note'])) echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; ?></td>
+        <td><?php if (!empty($row['note'])) { if (!in_array($row['note'], $info_list)) $info_list[] = $row['note']; echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; } ?></td>
         <td>
             <?php if ($row['fk_user']==$user->id || $time_admin) { ?>
             <a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_element']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
@@ -609,7 +610,7 @@ $duree_tot = 0;
     </tr>
     <tr>
         <td width="50" style="text-align: right;">Commentaire (optionnel) :</td>
-        <td colspan="2"><textarea name="timespent_note" style="width: 100%;"></textarea></td>
+        <td colspan="2"><?php if (!empty($info_list)) { echo '<select onchange="$(\'#timespent_note\').val($(this).val());"><option value="">-- choisir note précédente si besoin --</option>'; foreach($info_list as $info) { echo '<option value="'.$info.'">'.$info.'</option>'; } echo '</select>'; } ?><textarea id="timespent_note" name="timespent_note" style="width: 100%;"></textarea></td>
         <td style="text-align: center;padding: 5px;border:0;"><input name="_add" type="submit" value="Ajouter" /></td>
     </tr>
 </tbody>
