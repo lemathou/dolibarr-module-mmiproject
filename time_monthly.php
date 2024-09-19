@@ -46,7 +46,8 @@ if (empty($date))
 	$date = date('m/Y');
 list($month, $year) = explode('/', $date);
 $year_month = $year.'-'.$month;
-
+$date_next = ($month==12) ?'01/'.($year+1) :($month<=8 ?'0' :'').($month+1).'/'.$year;
+$date_prev = ($month==1) ?'12/'.($year-1) :($month<=10 ?'0' :'').($month-1).'/'.$year;
 $task_fk_user = GETPOST('task_fk_user');
 $task_user = new User($db);
 if (!empty($task_fk_user)) {
@@ -82,7 +83,7 @@ print load_fiche_titre($langs->trans("MMIProjectAreaTimeSheet"), '', 'mmiproject
 
 $users = [];
 if ($user->rights->mmiproject->time->admin) {
-	echo '<form method="GET" action="time_monthly.php">';
+	echo '<form id="form" method="GET" action="time_monthly.php">';
 	$sql = 'SELECT *, CONCAT(`firstname`, " ", `lastname`) label
 		FROM '.MAIN_DB_PREFIX.'user';
 	//echo $sql;
@@ -103,15 +104,18 @@ if ($user->rights->mmiproject->time->admin) {
 		FROM '.MAIN_DB_PREFIX.'element_time ptt';
 	//echo $sql;
 	$q = $db->query($sql);
-	//var_dump($q); var_dump($db);
-	echo 'Mois : <select name="date">';
-	if ($q) {
-		while($r=$db->fetch_array($q)) {
-			$r_date = $r['month'].'/'.$r['year'];
-			echo '<option value="'.$r_date.'"'.($date==$r_date ?' selected' :'').'>'.$r_date.'</option>';
-		}
+	$dates = [];
+	while($r=$db->fetch_array($q)) {
+		$dates[] = $r['month'].'/'.$r['year'];
 	}
-	echo '</select>';
+	//var_dump($q); var_dump($db);
+	echo 'Mois : <a href="javascript:;" onclick="$(\'#date option:first\').val(\''.$date_prev.'\');$(\'#date\').val(\''.$date_prev.'\');$(\'#form\').submit();">&lt;</a> <select id="date" name="date">';
+	if (! in_array($date, $dates))
+		echo '<option value="'.$date.'">'.$date.'</option>';
+	foreach($dates as $r_date) {
+		echo '<option value="'.$r_date.'"'.($date==$r_date ?' selected' :'').'>'.$r_date.'</option>';
+	}
+	echo '</select> <a href="javascript:;" onclick="$(\'#date option:first\').val(\''.$date_next.'\');$(\'#date\').val(\''.$date_next.'\');$(\'#form\').submit();">&gt;</a> ';
 	echo '<input id="holidays_aff" type="checkbox" name="holidays_aff" value="1"'.(!empty($holidays_aff) ?' checked' :'').' /> <label for="holidays_aff">Afficher fériés</label>';
 	echo '<input id="cp_aff" type="checkbox" name="cp_aff" value="1"'.(!empty($cp_aff) ?' checked' :'').' /> <label for="cp_aff">Afficher CP</label>';
 	echo '<input id="weeks_aff" type="checkbox" name="weeks_aff" value="1"'.(!empty($weeks_aff) ?' checked' :'').' /> <label for="weeks_aff">Afficher cumul semaines</label>';
