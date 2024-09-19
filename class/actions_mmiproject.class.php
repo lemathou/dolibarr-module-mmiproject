@@ -725,6 +725,8 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		}
 	}
 
+	// Recherche améliorée dans la liste des tâches et dans la liste des tâches d'un projet
+
 	function printFieldPreListTitle($parameters, &$object, &$action, $hookmanager)
 	{
 		$error = 0; // Error counter
@@ -736,7 +738,9 @@ class ActionsMMIProject extends MMI_Actions_1_0
 			$print .= '<div class="divsearchfield">';
 			$print .= '<input type="checkbox" id="search_no_permanent" name="search_no_permanent" value="1"'.($search_no_permanent ?' checked="checked"' :'').' /> <label for="search_no_permanent">Sans Permanent</label>';
 			$print .= '</div>';
-
+		}
+		if ($this->in_context($parameters, ['tasklist', 'projecttaskscard']))
+		{
 			$search_no_advanced_100 = GETPOST('search_no_advanced_100', 'bool');
 			$print .= '<div class="divsearchfield">';
 			$print .= '<input type="checkbox" id="search_no_advanced_100" name="search_no_advanced_100" value="1"'.($search_no_advanced_100 ?' checked="checked"' :'').' /> <label for="search_no_advanced_100">Sans finis 100%</for>';
@@ -762,10 +766,12 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		$error = 0; // Error counter
 		$print = '';
 		
-		if ($this->in_context($parameters, ['tasklist']))
+		if ($this->in_context($parameters, ['tasklist', 'projecttaskscard']))
 		{
-			if (GETPOST('search_no_permanent', 'bool'))
-				$print .= " AND (ef.permanent IS NULL OR ef.permanent = 0)";
+			if (GETPOST('search_no_permanent', 'bool')) {
+				$tblalias = $this->in_context($parameters, ['tasklist']) ?'ef' :'efpt';
+				$print .= " AND ($tblalias.permanent IS NULL OR $tblalias.permanent = 0)";
+			}
 			if (GETPOST('search_no_advanced_100', 'bool'))
 				$print .= " AND (t.progress IS NULL OR t.progress < 100)";
 		}
@@ -809,7 +815,7 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		$error = 0; // Error counter
 		$print = '';
 		
-		if ($this->in_context($parameters, ['tasklist']))
+		if ($this->in_context($parameters, ['tasklist', 'projecttaskscard']))
 		{
 			if (GETPOST('search_no_permanent', 'bool')) {
 				$print .= '&search_no_permanent=1';
