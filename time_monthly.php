@@ -991,7 +991,7 @@ foreach($l as $ddate=>$row) {
 
 	echo '<tr class="'.($row['isferie'] ?'holyday' :'').'">';
 	echo '<td>'.$row['dayofweek'].'</td>';
-	echo '<td>'.$row['date'].'</td>';
+	echo '<td><a href="/custom/mmiproject/time_form.php?date='.$row['date'].'">'.$row['date'].'</a></td>';
 	echo '<td>'.duration_aff($row['duration']).'</td>';
 	echo '<td>'.duration_aff($row['deplacement_duration']).'</td>';
 	echo '<td></td>';
