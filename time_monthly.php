@@ -84,18 +84,24 @@ print load_fiche_titre($langs->trans("MMIProjectAreaTimeSheet"), '', 'mmiproject
 $users = [];
 if ($user->rights->mmiproject->time->admin) {
 	echo '<form id="form" method="GET" action="time_monthly.php">';
-	$sql = 'SELECT *, CONCAT(`firstname`, " ", `lastname`) label
-		FROM '.MAIN_DB_PREFIX.'user';
+	$sql = 'SELECT u.*, CONCAT(u.`firstname`, " ", u.`lastname`) label
+		FROM '.MAIN_DB_PREFIX.'user AS u
+		ORDER BY u.statut DESC, u.login';
 	//echo $sql;
 	$q = $db->query($sql);
 	//var_dump($q); var_dump($db);
 	echo 'Collaborateur : <select name="task_fk_user"><option value=""></option>';
+	$disabled = false;
 	if ($q) {
 		while($r=$db->fetch_array($q)) {
 			$users[$r['rowid']] = $r;
 			if ($task_fk_user==$r['rowid'])
 				$user_name = $r['label'];
-			echo '<option value="'.$r['rowid'].'"'.($task_fk_user==$r['rowid'] ?' selected' :'').'>'.$r['label'].'</option>';
+			if (!$disabled && !$r['statut']) {
+				$disabled = true;
+				echo '<option disabled>-----</option>';
+			}
+			echo '<option value="'.$r['rowid'].'"'.($task_fk_user==$r['rowid'] ?' selected' :'').($r['statut']==0 ?' style="color:gray;"' :'').'>'.$r['label'].($r['statut']==0 ?' [Inactif]' :'').'</option>';
 		}
 	}
 	echo '</select>';
