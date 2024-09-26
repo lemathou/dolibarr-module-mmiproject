@@ -243,7 +243,7 @@ $sql = 'SELECT DISTINCT pt.*, pt2.fk_jalon_commandedet
 			AND pe.fk_c_type_contact IN (SELECT rowid FROM '.MAIN_DB_PREFIX.'c_type_contact WHERE element="project")
 
     WHERE (
-		p.fk_statut = 1
+		p.fk_statut >= 1
 		AND (
 			pe.fk_socpeople IN ('.implode(', ', $userids).')
 			OR ptt.fk_user IN ('.implode(', ', $userids).')
@@ -268,7 +268,8 @@ if ($q) {
 $projects = [];
 $sql = 'SELECT DISTINCT p.*
     FROM '.MAIN_DB_PREFIX.'projet p
-    WHERE p.rowid IN ('.implode(',', $project_ids).')';
+    WHERE p.rowid IN ('.implode(',', $project_ids).')      
+    ORDER BY IF(p.fk_statut=1,0,1)';
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q); var_dump($db);
@@ -486,7 +487,7 @@ function parseTime2(t)
         $projects_form = [];
         //var_dump($projects);
         foreach($projects as $project)
-            $projects_form[$project['rowid']] = ['label'=>'['.$project['ref'].'] - '.$project['title']];
+            $projects_form[$project['rowid']] = ['label'=>($project['fk_statut'] == 2 ?'<span style="color:gray;">' :'').'['.$project['ref'].'] - '.$project['title'].($project['fk_statut'] == 2 ?' [Fermé]</span>' :'')];
         echo $form->selectArray('fk_project', $projects_form, $fk_project, 'Choisir un projet pour filtrer les tâches');
     ?></p>
     <p>Jalon : <select name="fk_jalon"><option value="">--</option><?php
@@ -544,7 +545,7 @@ $info_list = [];
         <td rowspan="2" class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['element_datehour'])+$row['element_duration']); ?></td>
         <td class="duration" align="right"><?php if ($datenew) echo $duree; ?></td>
         <td><?php echo $users[$row['fk_user']]['name']; ?></td>
-        <td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid=7?id='.$project['rowid'].'">'.$project['title'].'</a>'; ?></td>
+        <td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid=7?id='.$project['rowid'].'">'.$project['title'].($project['fk_statut'] == 2 ?'  [Fermé]' :'').'</a>'; ?></td>
         <td><?php if (!empty($row['note'])) { if (!in_array($row['note'], $info_list)) $info_list[] = $row['note']; echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; } ?></td>
         <td>
             <?php if ($row['fk_user']==$user->id || $time_admin) { ?>
