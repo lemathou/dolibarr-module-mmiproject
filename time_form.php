@@ -199,13 +199,15 @@ $userids = (empty($userid) ?[$user->id] :(is_numeric($userid) ?[$userid] :$useri
 //var_dump($userids);
 $fk_user = $user->id;
 $user_name = $user->login;
-$sql = 'SELECT u.rowid, u.firstname, u.lastname, CONCAT(u.firstname, " ", u.lastname) AS name
+$sql = 'SELECT u.rowid, u.firstname, u.lastname, CONCAT(u.firstname, " ", u.lastname) AS name, u.admin,  u.statut
     FROM '.MAIN_DB_PREFIX.'user u';
 $q = $db->query($sql);
-$users = [];
+$users = $users_active = [];
 while($r=$db->fetch_array($q)) {
-    //var_dump($r['rowid']);
-    $users[$r['rowid']] = $r;
+	//var_dump($r['rowid']);
+	$users[$r['rowid']] = $r;
+	if ($r['statut'])
+		$users_active[] = $r['rowid'];
 }
 //var_dump($users);
 
@@ -477,7 +479,7 @@ function parseTime2(t)
 	</td>
 	<td><?php
     if ($time_admin && $addtimespent_multiple_userid)
-        print $form->select_dolusers((GETPOST('userid', 'array:int') ? GETPOST('userid', 'array:int') : [$user->id]), 'userid', 0, '', 0, '', [], 0, 0, 0, '', 0, $langs->trans("ResourceNotAssignedToProject"), '', 0, 0, 1);
+        print $form->select_dolusers((GETPOST('userid', 'array:int') ? GETPOST('userid', 'array:int') : [$user->id]), 'userid', 0, '', 0, '', [], 0, 0, 0, '', 0, $langs->trans("ResourceNotAssignedToProject"), '', 1, 0, 1);
     else
         print '<p><input type="hidden" name="userid'.($addtimespent_multiple_userid ?'[]' :'').'" value="'.$user->id.'" /> '.$user->lastname.' '.$user->firstname.'</p>';
 	?>
