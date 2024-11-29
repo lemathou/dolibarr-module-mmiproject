@@ -2,6 +2,9 @@
 .holyday {
     background-color: #ffaaaa;
 }
+.total {
+    page-break-before: always;
+}
 .total th {
     text-align: left;
 }

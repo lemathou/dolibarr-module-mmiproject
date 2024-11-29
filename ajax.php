@@ -29,8 +29,6 @@ dol_include_once('/mmiproject/lib/mmiproject.lib.php');
 setlocale(LC_TIME, "fr_FR.utf8");
 date_default_timezone_set('Europe/Paris');
 
-$right_contract_all = $user->rights->mmiproject->contract->all;
-
 $action = GETPOST('action');
 
 // Mise à jour des heures sup
@@ -57,7 +55,7 @@ if ($action=='hsup') {
 		$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'user_pay (`fk_user`, `date`, `paid_hrsup`) VALUES('.$user_id.', "'.$month.'-01", '.(is_numeric($hsup) ?$hsup :'NULL').')';
 		$db->query($sql);
 	}
-	die(json_encode(['r'=>true, 'message'=>$sql]));
+	die(json_encode(['r'=>true, 'debug'=>$sql]));
 }
 
 // Mise à jour des heures sup décalées
@@ -84,5 +82,34 @@ if ($action=='decal_hsup_conge') {
 		$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'user_pay (`fk_user`, `date`, `decal_hsup_conge`) VALUES('.$user_id.', "'.$month.'-01", '.(is_numeric($hsup) ?$hsup :'NULL').')';
 		$db->query($sql);
 	}
-	die(json_encode(['r'=>true, 'message'=>$sql]));
+	die(json_encode(['r'=>true, 'debug'=>$sql]));
+}
+
+// Validation des heures du mois
+if ($action=='month_hour_sign') {
+	if (! false) {
+		die(json_encode(['r'=>false, 'error'=>"Unauthorized"]));
+	}
+	$sign_date = GETPOST('sign_date');
+	if (empty($sign_date))
+		$sign_date = date('Y-m-d');
+	$user_id = GETPOST('user_id');
+	if (!is_numeric($user_id))
+		die(json_encode(['r'=>false, 'error'=>'Invalid user']));
+	$month = GETPOST('month');
+	if (!$month)
+		die(json_encode(['r'=>false, 'error'=>'Invalid month']));
+	$sql = 'SELECT rowid, month_hours_sign_date FROM '.MAIN_DB_PREFIX.'user_pay WHERE fk_user='.$user_id.' AND `date`="'.$month.'-01"';
+	$resql = $db->query($sql);
+	if ($resql && ($db->num_rows($resql) > 0) && (list($rowid, $month_hours_sign_date)=$resql->fetch_row())) {
+		if (!empty($month_hours_sign_date))
+			die(json_encode(['r'=>false, 'error'=>'Already signed']));
+		$sql = 'UPDATE '.MAIN_DB_PREFIX.'user_pay SET month_hours_sign_date="'.($sign_date).'" WHERE rowid='.$rowid;
+		$db->query($sql);
+	}
+	else {
+		$sql = 'INSERT INTO '.MAIN_DB_PREFIX.'user_pay (`fk_user`, `date`, `month_hours_sign_date`) VALUES('.$user_id.', "'.$month.'-01", "'.$sign_date.'")';
+		$db->query($sql);
+	}
+	die(json_encode(['r'=>true, 'debug'=>$sql]));
 }

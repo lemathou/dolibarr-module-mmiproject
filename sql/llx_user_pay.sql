@@ -18,6 +18,11 @@ ALTER TABLE `llx_user_pay`
   MODIFY `rowid` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `llx_user_pay`
-  ADD CONSTRAINT `lllx_user_pay_ibfk_1` FOREIGN KEY (`fk_user`) REFERENCES `lllx_user` (`rowid`);
+  ADD CONSTRAINT `llx_user_pay_ibfk_1` FOREIGN KEY (`fk_user`) REFERENCES `llx_user` (`rowid`);
 
-ALTER TABLE `llx_user_pay` ADD `decal_hsup_conge` DECIMAL(6,2) NULL DEFAULT NULL AFTER `paid_amount`, ADD `recup_hsup_conge` DECIMAL(6,2) NULL DEFAULT NULL AFTER `decal_hsup_conge`;
+ALTER TABLE `llx_user_pay`
+  ADD `decal_hsup_conge` DECIMAL(6,2) NULL DEFAULT NULL AFTER `paid_amount`,
+  ADD `recup_hsup_conge` DECIMAL(6,2) NULL DEFAULT NULL AFTER `decal_hsup_conge`;
+
+ALTER TABLE `llx_user_pay`
+  ADD `month_hours_sign_date` date NULL DEFAULT NULL AFTER `recup_hsup_conge`;

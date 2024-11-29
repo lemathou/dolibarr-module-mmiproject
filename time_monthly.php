@@ -764,6 +764,7 @@ if ($q) {
 		//var_dump($cumul_mois[substr($r['date'], 0, 7)]);
 	}
 }
+//var_dump($paid); die();
 //var_dump($cumul_mois);
 
 // Récup H.SUp décalées période précédente
@@ -777,7 +778,6 @@ $sql = 'SELECT e.*
 //echo '<p>'.$sql.'</p>';
 $q = $db->query($sql);
 //var_dump($q);
-$paid = [];
 if ($q) {
 	while($r=$db->fetch_array($q)) {
 		$hsup_prev_decale += $r['decal_hsup_conge'];
@@ -953,6 +953,12 @@ $monthly = $daily*$month_workdays; // @todo recalculer bien !!
 echo '<p id="user_name">'.$user_name.'</p>';
 echo '<p>Période : '.date_reverse($periode_debut).' à '.date_reverse($periode_fin).' / Mois de '.strftime("%B", strtotime($month.'-01')).' ('.date_reverse($year_month).') : '.$month_number.' jours dans le mois, '.$month_workdays.' travaillables</p>';
 echo '<p>'.$monthcur['daily'].'h/j sur contrat en vigueur, '.$monthcur['monthly'].'h à travailler dans le mois</p>';
+
+//var_dump($paid, $year_month);
+if (!empty($paid[$year_month]) && !empty($paid[$year_month]['month_hours_sign_date'])) {
+	$month_hours_sign_date = $paid[$year_month]['month_hours_sign_date'];
+	echo '<p>Heures du mois validées par le salarié le : '.date_reverse($month_hours_sign_date).'</p>';
+}
 
 echo '<div class="div-table-responsive-no-min"><table class="month">';
 echo '<caption>Travail du mois</caption>';
