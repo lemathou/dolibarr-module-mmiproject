@@ -87,7 +87,9 @@ class ActionsMMIProject extends MMI_Actions_1_0
 	public function getNomUrl($parameters, &$object, &$action)
 	{
 		global $db, $langs, $conf, $user;
-		$this->resprints = '';
+
+		// @todo vérifier contexte
+		//$this->resprints = $object->label;
 		return 0;
 	}
 

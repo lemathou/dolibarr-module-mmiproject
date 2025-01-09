@@ -35,9 +35,7 @@ $show_rcr = true;
 $right_contract_all = $user->rights->mmiproject->contract->all;
 
 // @todo rendre administrable
-$soliday = !empty($conf->global->MMIPROJECT_SOLIDAY) ?$conf->global->MMIPROJECT_SOLIDAY :'2022-11-01';
-$solidtime = strtotime($soliday);
-$solidweeknum = date('W', $solitime);
+$solidays = !empty($conf->global->MMIPROJECT_SOLIDAYS) ?explode(',', $conf->global->MMIPROJECT_SOLIDAYS) :['2022-11-01','2024-11-11'];
 
 $time = time();
 
@@ -196,6 +194,18 @@ $periode_prev_year_fin = $periode_year_fin-1;
 $periode_prev_fin = $periode_prev_year_fin.'-'.($periode_mois_fin<=9 ?'0' :'').$periode_mois_fin;
 $periode_prev_fin_nbdays = cal_days_in_month(CAL_GREGORIAN, $periode_mois_fin, $periode_prev_year_fin);
 $periode_prev_fin_date = $periode_prev_fin.'-'.$periode_prev_fin_nbdays;
+
+$soliday = '';
+foreach($solidays as $i) {
+	$j = substr($i, 0, 7);
+	if ($periode_debut<=$j && $j<=$periode_fin_date) {
+		$soliday = $i;
+		break;
+	}
+}
+//var_dump($solidays, $soliday);
+$solidtime = strtotime($soliday);
+$solidweeknum = date('W', $solitime);
 
 //var_dump($task_user);
 
@@ -607,12 +617,12 @@ if ($q) {
 		//var_dump($r);
 		if ($r['task_type']==1) {
 			$l[$r['date']]['deplacement_duration'] += $r['duration'];
-			if ($l[$r['date']]['isferie'])
+			if ($l[$r['date']]['isferie'] && $r['date']!=$soliday)
 				$l[$r['date']]['ferie_trav_duration'] = +$r['duration'];
 		}
 		else {
 			$l[$r['date']]['duration'] += $r['duration'];
-			if ($l[$r['date']]['isferie'])
+			if ($l[$r['date']]['isferie'] && $r['date']!=$soliday)
 				$l[$r['date']]['ferie_trav_duration'] = +$r['duration'];
 		}
 	}
