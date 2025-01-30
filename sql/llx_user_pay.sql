@@ -26,3 +26,6 @@ ALTER TABLE `llx_user_pay`
 
 ALTER TABLE `llx_user_pay`
   ADD `month_hours_sign_date` date NULL DEFAULT NULL AFTER `recup_hsup_conge`;
+
+ALTER TABLE `llxsq_user_pay`
+  ADD `hfix` DECIMAL(6,2) NULL DEFAULT NULL AFTER `recup_hsup_conge`;

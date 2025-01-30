@@ -768,9 +768,11 @@ if ($q) {
 		if(!isset($cumul_mois[substr($r['date'], 0, 7)]['hsup'])) {
 			$cumul_mois[substr($r['date'], 0, 7)]['hsup'] = 0;
 			$cumul_mois[substr($r['date'], 0, 7)]['decal_hsup_conge'] = 0;
+			$cumul_mois[substr($r['date'], 0, 7)]['hfix'] = 0;
 		}
 		$cumul_mois[substr($r['date'], 0, 7)]['hsup'] += $r['paid_hrsup'];
 		$cumul_mois[substr($r['date'], 0, 7)]['decal_hsup_conge'] += $r['decal_hsup_conge'];
+		$cumul_mois[substr($r['date'], 0, 7)]['hfix'] += $r['hfix'];
 		//var_dump($cumul_mois[substr($r['date'], 0, 7)]);
 	}
 }
@@ -940,6 +942,9 @@ foreach($cumul_mois as $mois=>&$r) {
 	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_rcr']+ $r['arret_autre'] - $r['hsup'] - $r['decal_hsup_conge'];
 	if ($mois == $periode_year_debut.'-'.($periode_mois_debut<10 ?'0'.$periode_mois_debut :$periode_mois_debut))
 		$r['comptabilise'] += $hsup_prev_decale_reste;
+	// Heures corrigées par admin
+	if (!empty($r['hfix']))
+		$r['comptabilise'] += $r['hfix'];
 	$r['delta'] = $r['comptabilise'] - $r['monthly'];
 	$r['paye'] = $r['effectif'] + $r['ferie_duration'] + $r['arret_rcr'] - (substr($soliday, 0, 7)==$r['date'] ?$l[$soliday]['daily'] :0);
 
@@ -1353,6 +1358,7 @@ if (!empty($month_aff)) {
 	echo '<th>Autre</th>';
 	echo '<th>H.<br />Payées</th>';
 	echo '<th>H.<br />Décalées</th>';
+	echo '<th>H.<br />Corrigées</th>';
 
 	echo '<td></td>';
 	echo '<th>Effectif<br />(Trav+Dépl+Form)</th>';
@@ -1397,10 +1403,12 @@ if (!empty($month_aff)) {
 		if ($right_contract_all) {
 			echo '<td><input class="hsup" value="'.duration_aff($r['hsup']).'" size="3" /></p>';
 			echo '<td><input class="decal_hsup_conge" value="'.duration_aff($r['decal_hsup_conge']).'" size="3" /></p>';
+			echo '<td><input class="hfix" value="'.duration_aff($r['hfix']).'" size="3" /></p>';
 		}
 		else {
 			echo '<td>'.duration_aff($r['hsup']).'</p>';
 			echo '<td>'.duration_aff($r['decal_hsup_conge']).'</p>';
+			echo '<td>'.duration_aff($r['hfix']).'</p>';
 		}
 
 		echo '<td></td>';
@@ -1442,6 +1450,14 @@ $('input.hsup').change(function(){
 });
 $('input.decal_hsup_conge').change(function(){
 	$.post('ajax.php?action=decal_hsup_conge', {user_id: <?php echo $task_fk_user; ?>, month: $(this.parentNode.parentNode).data('date'), hsup: $(this).val()}, function(r){
+		if (r.r==false) {
+			alert(r);
+		}
+	});
+	//alert('Heure sup mise à jour');
+});
+$('input.hfix').change(function(){
+	$.post('ajax.php?action=hfix', {user_id: <?php echo $task_fk_user; ?>, month: $(this.parentNode.parentNode).data('date'), hfix: $(this).val()}, function(r){
 		if (r.r==false) {
 			alert(r);
 		}
