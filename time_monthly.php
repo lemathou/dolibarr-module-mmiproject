@@ -29,6 +29,12 @@ dol_include_once('/mmiproject/lib/mmiproject.lib.php');
 setlocale(LC_TIME, "fr_FR.utf8");
 date_default_timezone_set('Europe/Paris');
 
+// $fullNameMode is 0=Lastname+Firstname (MAIN_FIRSTNAME_NAME_POSITION=1), 1=Firstname+Lastname (MAIN_FIRSTNAME_NAME_POSITION=0)
+$fullNameMode = 0;
+if (!getDolGlobalString('MAIN_FIRSTNAME_NAME_POSITION')) {
+	$fullNameMode = 1; //Firstname+lastname
+}
+
 $show_rtt = false;
 $show_rcr = true;
 
@@ -82,7 +88,7 @@ print load_fiche_titre($langs->trans("MMIProjectAreaTimeSheet"), '', 'mmiproject
 $users = [];
 if ($user->rights->mmiproject->time->admin) {
 	echo '<form id="form" method="GET" action="time_monthly.php">';
-	$sql = 'SELECT u.*, CONCAT(u.`firstname`, " ", u.`lastname`) label
+	$sql = 'SELECT u.*
 		FROM '.MAIN_DB_PREFIX.'user AS u
 		ORDER BY u.statut DESC, u.login';
 	//echo $sql;
@@ -92,6 +98,7 @@ if ($user->rights->mmiproject->time->admin) {
 	$disabled = false;
 	if ($q) {
 		while($r=$db->fetch_array($q)) {
+			$r['label'] = $fullNameMode ?$r['firstname'].' '.$r['lastname'] :$r['lastname'].' '.$r['firstname'];
 			$users[$r['rowid']] = $r;
 			if ($task_fk_user==$r['rowid'])
 				$user_name = $r['label'];
