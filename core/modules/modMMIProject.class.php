@@ -497,7 +497,7 @@ class modMMIProject extends DolibarrModules
 		
 		// Resource
 		$extrafields->addExtraField('serial', $langs->trans('Extrafield_serial'), 'varchar',  100,  "32", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_serial'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
-		$extrafields->addExtraField('length', $langs->trans('Extrafield_rlength'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_length'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('length', $langs->trans('Extrafield_length'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_length'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 		$extrafields->addExtraField('weight', $langs->trans('Extrafield_weight'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_weight'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 		$extrafields->addExtraField('height', $langs->trans('Extrafield_height'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_height'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 		$extrafields->addExtraField('width', $langs->trans('Extrafield_width'), 'double',  100,  "10,2", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_width'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
