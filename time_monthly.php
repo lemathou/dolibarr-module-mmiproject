@@ -105,7 +105,8 @@ if ($user->rights->mmiproject->time->admin) {
 	echo '</select>';
 
 	$sql = 'SELECT DISTINCT YEAR(ptt.element_date) `year`, DATE_FORMAT(ptt.element_date, "%m") `month`
-		FROM '.MAIN_DB_PREFIX.'element_time ptt';
+		FROM '.MAIN_DB_PREFIX.'element_time ptt
+		WHERE ptt.fk_user='.$task_fk_user;
 	//echo $sql;
 	$q = $db->query($sql);
 	$dates = [];
