@@ -116,7 +116,7 @@ if ($action=='hfix') {
 
 // Validation des heures du mois
 if ($action=='month_hour_sign') {
-	if (! false) {
+	if (! $right_contract_all) {
 		die(json_encode(['r'=>false, 'error'=>"Unauthorized"]));
 	}
 	$sign_date = GETPOST('sign_date');
