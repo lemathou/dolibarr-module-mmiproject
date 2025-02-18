@@ -40,6 +40,9 @@ if ($addtimespent_multiple_userid) {
 elseif (!empty($userid=GETPOST("userid", 'int'))) {
 	$userids = [$userid];
 }
+if (empty($userids)) {
+	$userids = [$user->id];
+}
 // Users (All)
 // @todo need optimisation in case of lots of users
 $sql = 'SELECT u.rowid, u.firstname, u.lastname, CONCAT(u.firstname, " ", u.lastname) AS name, u.admin,  u.statut
