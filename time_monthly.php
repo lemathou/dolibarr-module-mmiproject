@@ -981,10 +981,12 @@ echo '<p>'.$monthcur['daily'].'h/j sur contrat en vigueur, '.$monthcur['monthly'
 if (!empty($paid[$year_month]) && !empty($paid[$year_month]['month_hours_sign_date'])) {
 	$month_hours_sign_date = $paid[$year_month]['month_hours_sign_date'];
 	echo '<p>Heures du mois validées par le salarié le : '.date_reverse($month_hours_sign_date).'</p>';
+	if ($user->rights->mmiproject->time->admin) {
+		echo '<p><input class="butAction" type="button" id="form_month_user_invalidate" value="Invalider le mois" /></p>';
+	}
 }
 elseif ($user->rights->mmiproject->time->admin) {
-	echo '<p><input type="button" id="form_month_user_validate" value="Valider le mois" /> en date du <input type="date" name="month_sign_date" value="" />  et bloquer les modifications sur ce mois';
-	echo '</p>';
+	echo '<p><input class="butAction" type="button" id="form_month_user_validate" value="Valider le mois" /> en date du <input type="date" name="month_sign_date" value="" />  et bloquer les modifications sur ce mois.</p>';
 }
 
 echo '<div class="div-table-responsive-no-min"><table class="month">';
@@ -1477,13 +1479,29 @@ $('input.hfix').change(function(){
 	//alert('Heure sup mise à jour');
 });
 $('#form_month_user_validate').click(function(){
-	alert('coucou');
 	if (! confirm('Êtes-vous certain ?'))
 		return false;
 	
 	$.post('ajax.php?action=month_hour_sign', {user_id: <?php echo $task_fk_user; ?>, month: "<?php echo $year_month; ?>", sign_date: $('#month_sign_date').val()}, function(r){
 		if (r.r==false) {
 			alert(r);
+		}
+		else {
+			document.location.reload();
+		}
+	});
+	//alert('Heure sup mise à jour');
+});
+$('#form_month_user_invalidate').click(function(){
+	if (! confirm('Êtes-vous certain ?'))
+		return false;
+	
+	$.post('ajax.php?action=month_hour_unsign', {user_id: <?php echo $task_fk_user; ?>, month: "<?php echo $year_month; ?>"}, function(r){
+		if (r.r==false) {
+			alert(r);
+		}
+		else {
+			document.location.reload();
 		}
 	});
 	//alert('Heure sup mise à jour');

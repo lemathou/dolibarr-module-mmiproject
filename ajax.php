@@ -32,6 +32,7 @@ date_default_timezone_set('Europe/Paris');
 $action = GETPOST('action');
 
 $right_contract_all = $user->rights->mmiproject->contract->all;
+$right_contract_admin = $user->rights->mmiproject->time->admin;
 
 // Mise à jour des heures sup
 if ($action=='hsup') {
@@ -116,7 +117,7 @@ if ($action=='hfix') {
 
 // Validation des heures du mois
 if ($action=='month_hour_sign') {
-	if (! $right_contract_all) {
+	if (! $right_contract_admin) {
 		die(json_encode(['r'=>false, 'error'=>"Unauthorized"]));
 	}
 	$sign_date = GETPOST('sign_date');
@@ -141,4 +142,28 @@ if ($action=='month_hour_sign') {
 		$db->query($sql);
 	}
 	die(json_encode(['r'=>true, 'debug'=>$sql]));
+}
+
+// Validation des heures du mois
+if ($action=='month_hour_unsign') {
+	if (! $right_contract_admin) {
+		die(json_encode(['r'=>false, 'error'=>"Unauthorized"]));
+	}
+	$sign_date = GETPOST('sign_date');
+	if (empty($sign_date))
+		$sign_date = date('Y-m-d');
+	$user_id = GETPOST('user_id');
+	if (!is_numeric($user_id))
+		die(json_encode(['r'=>false, 'error'=>'Invalid user']));
+	$month = GETPOST('month');
+	if (!$month)
+		die(json_encode(['r'=>false, 'error'=>'Invalid month']));
+	$sql = 'DELETE FROM '.MAIN_DB_PREFIX.'user_pay WHERE fk_user='.$user_id.' AND `date`="'.$month.'-01"';
+	$resql = $db->query($sql);
+	if ($resql && ($db->affected_rows($resql) > 0)) {
+		die(json_encode(['r'=>true, 'debug'=>$sql]));
+	}
+	else {
+		die(json_encode(['r'=>false, 'debug'=>$sql]));
+	}
 }
