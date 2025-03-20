@@ -119,6 +119,7 @@ class modMMIProject extends DolibarrModules
 				'tasklist',
 				'projecttaskcard',
 				'projecttaskscard',
+				'projecttasktime',
 				//   'data' => array(
 				//       'hookcontext1',
 				//       'hookcontext2',
@@ -569,6 +570,7 @@ class modMMIProject extends DolibarrModules
 		// User
 		$extrafields->addExtraField('workdaysnb', $langs->trans('Extrafield_workdaysnb'), 'double', 100, '4,2', 'user', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_workdaysnb'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
 		$extrafields->addExtraField('dailyhours', $langs->trans('Extrafield_workdays'), 'double', 100, '4,2', 'user', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_dailyhours'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
+		$extrafields->addExtraField('employee_btp', $langs->trans('Extrafield_employee_btp'), 'boolean', 100, '', 'user', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_employee_btp'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
 		//$extrafields->addExtraField('dailyhours', $langs->trans('Extrafield_dailyhours'), 'double', 100, '4,2', 'user', 0, 0, '', "", 1, '', 1, $langs->trans('ExtrafieldToolTip_dailyhours'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 1);
 		
 		// @todo conf->mmiproject->enabled à vérifier !!

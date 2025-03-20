@@ -89,6 +89,7 @@ Extrafield_workdaysnb = Nombre de jours travaillés par semaine
 Extrafield_workdays = Jours de la semaine travaillés (semaines impaires)
 Extrafield_workdays2 = Jours de la semaine travaillés (semaines paires)
 Extrafield_dailyhours = Nombre d'heures travaillées par jour
+Extrafield_employee_btp = Salarié sur chantiers (BTP)
 
 #
 # About page
