@@ -602,9 +602,10 @@ $task_type = [
 	1 => 'Déplacement',
 ];
 
-// Jours Travaillés du mois
+$projets = [];
 
-$sql = 'SELECT ptt.element_date AS `date`, SUM(ptt.element_duration)/3600 duration, p2.task_type 
+// Jours Travaillés du mois
+$sql = 'SELECT ptt.element_date AS `date`, SUM(ptt.element_duration)/3600 duration, p2.task_type, pt.fk_projet
 	FROM '.MAIN_DB_PREFIX.'element_time ptt
 	LEFT JOIN '.MAIN_DB_PREFIX.'projet_task pt
 		ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
@@ -633,9 +634,20 @@ if ($q) {
 			if ($l[$r['date']]['isferie'] && $r['date']!=$soliday)
 				$l[$r['date']]['ferie_trav_duration'] = +$r['duration'];
 		}
+		$l[$r['date']]['fk_projets'][] = $r['fk_projet'];
+		if (!isset($projets[$r['fk_projet']]))
+			$projets[$r['fk_projet']] = ['id'=>$r['fk_projet']];
 	}
 }
 //var_dump($l);
+
+$sql = "SELECT rowid, title AS label FROM ".MAIN_DB_PREFIX."projet WHERE rowid IN (".implode(',', array_keys($projets)).")";
+$q = $db->query($sql);
+if ($q) {
+	while($r=$db->fetch_array($q)) {
+		$projets[$r['rowid']]['label'] = $r['label'];
+	}
+}
 
 
 // Jours de Congés & co du mois
@@ -1008,6 +1020,7 @@ echo '<thead>';
 	echo '<th width="60">Abs. justif.</th>';
 	echo '<th width="60">Forma.</th>';
 	//echo '<th width="60">Partiel</th>';
+	echo '<th>Projets concernés</th>';
 	echo '</tr>';
 echo '</thead>';
 echo '<tbody>';
@@ -1044,6 +1057,7 @@ foreach($l as $ddate=>$row) {
 	echo '<td>'.($row['arret_rcr'] ?$row['arret_rcr'] :'').'</td>';
 	echo '<td>'.($row['arret_justifie'] ?$row['arret_justifie'] :'').'</td>';
 	echo '<td>'.($row['arret_formation'] ?$row['arret_formation'] :'').'</td>';
+	echo '<td>'; if (!empty($row['fk_projets'])) foreach($row['fk_projets'] as $projet_id) echo '<a href="/projet/card.php?id='.$projet_id.'">'.$projets[$projet_id]['label'].'</a> '; echo '</td>';
 	echo '</tr>';
 
 	// Récap semaine
