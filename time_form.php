@@ -45,8 +45,10 @@ if (empty($userids)) {
 }
 // Users (All)
 // @todo need optimisation in case of lots of users
-$sql = 'SELECT u.rowid, u.firstname, u.lastname, CONCAT(u.firstname, " ", u.lastname) AS name, u.admin,  u.statut
-	FROM '.MAIN_DB_PREFIX.'user u';
+$sql = 'SELECT u.rowid, u.firstname, u.lastname, CONCAT(u.firstname, " ", u.lastname) AS name, u.admin,  u.statut, u2.employee_btp
+	FROM '.MAIN_DB_PREFIX.'user u
+	LEFT JOIN '.MAIN_DB_PREFIX.'user_extrafields u2 ON u2.fk_object = u.rowid
+	';
 $q = $db->query($sql);
 $users = $users_active = [];
 while($r=$db->fetch_array($q)) {
@@ -317,6 +319,7 @@ if (!empty($jalons_ids)) {
 // Temps passé
 $time_day = [];
 $time_day2 = [];
+$time_users	= [];
 $sql = 'SELECT ptt.*
 	FROM '.MAIN_DB_PREFIX.'element_time ptt
 	INNER JOIN '.MAIN_DB_PREFIX.'projet_task pt
@@ -335,7 +338,12 @@ $q = $db->query($sql);
 //var_dump($q); var_dump($db);
 if ($q) {
 	while($r=$db->fetch_array($q)) {
+		$t0 = strtotime($r['element_datehour']);
+		$t1 = $t0 + $r['element_duration'];
 		//var_dump($r);
+		$time_users[$r['fk_user']]['l'][] = $r;
+		$time_users[$r['fk_user']]['duration'] += $r['element_duration'];
+		$time_users[$r['fk_user']]['segments'][] = [date('H:i', $t0), date('H:i', $t1)];
 		$time_day[$r['rowid']] = $r;
 		if (empty($time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']]))
 			$time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']] = ['rows'=>[], 'userids'=>[]];
@@ -343,6 +351,8 @@ if ($q) {
 		$time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']]['userids'][] = $r['fk_user'];
 	}
 }
+
+//var_dump($time_day2);
 
 $form = new Form($db);
 //$formfile = new FormFile($db);
@@ -526,6 +536,48 @@ if (!empty($validated)) {
 	echo '<p class="alert">Attention, les utilisateurs suivant ont déjà validé le mois '.date_reverse($yearmonth).' : '.implode(', ', $validated).'</p>';
 }
 ?>
+
+<?php if ($time_admin) { ?>
+<h3>Résumé par salarié BTP</h3>
+<table border="1">
+<thead>
+	<tr>
+		<th>Salarié</th>
+		<th>Heures</th>
+		<th>Segments</th>
+		<th>Anomalies</th>
+	</tr>
+</thead>
+<tbody>
+<?php
+foreach($time_users as $userid=>$time_user) {
+	// Bypass user
+	if ($users[$userid]['employee_btp'] != 1)
+		continue;
+	
+	$hours = $time_user['duration']/3600;
+	$hours = round($hours, 2);
+	$hours = str_replace('.', ',', $hours);
+	$anomalies = [];
+	$t = NULL;
+	foreach($time_user['segments'] as $segment) {
+		if ($t && $segment[0] != $t && ! (substr($t, 0, 2) >= 12 && substr($t, 0, 2) <= 14)) {
+			$anomalies[] = $t.' - '.$segment[0];
+		}
+		$t = $segment[1];
+	}
+	//var_dump($anomalies);
+	?>
+	<tr>
+		<td><?php echo $users[$userid]['name']; ?></td>
+		<td><?php echo $hours; ?></td>
+		<td><?php foreach($time_user['segments'] as $segment) { echo '<span>'.$segment[0].'-'.$segment[1].'</span> / '; } ?></td>
+		<td style="color: red;"><?php echo implode(', ', $anomalies); ?></td>
+	</tr>
+<?php } ?>
+</tbody>
+</table>
+<?php } ?>
 
 <h3>Tâches avec du temps sur la journée</h3>
 <table border="1">
