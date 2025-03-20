@@ -623,13 +623,13 @@ $info_list = [];
 		<td rowspan="2" class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['element_datehour'])+$row['element_duration']); ?></td>
 		<td class="duration" align="right"><?php if ($datenew) echo $duree; ?></td>
 		<td><?php echo $users[$row['fk_user']]['name']; ?></td>
-		<td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid=7?id='.$project['rowid'].'">'.$project['title'].($project['fk_statut'] == 2 ?'  [Fermé]' :'').'</a>'; ?></td>
+		<td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid='.$project['title'].'">'.$project['title'].($project['fk_statut'] == 2 ?'  [Fermé]' :'').'</a>'; ?></td>
 		<td><?php if (!empty($row['note'])) { if (!in_array($row['note'], $info_list)) $info_list[] = $row['note']; echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; } ?></td>
 		<td>
 		<?php if (empty($user_pay[$row['fk_user']][$yearmonth]['month_hours_sign_date'])) { ?>
 			<?php if ($row['fk_user']==$user->id || $time_admin) { ?>
-			<a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_element']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
-			<a class="reposition paddingleft" target="_blank" href="/projet/tasks/time.php?id=<?php echo $row['fk_element']; ?>&amp;action=deleteline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist&amp;token=<?php echo $token; ?>"><span class="fas fa-trash pictodelete paddingleft" style="" title="Supprimer"></span></a>
+			<a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?limit=1000&id=<?php echo $row['fk_element']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
+			<a class="reposition paddingleft" target="_blank" href="/projet/tasks/time.php?limit=1000&id=<?php echo $row['fk_element']; ?>&amp;action=deleteline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist&amp;token=<?php echo $token; ?>"><span class="fas fa-trash pictodelete paddingleft" style="" title="Supprimer"></span></a>
 			<?php }
 			if ($datenew && $time_useradd) { ?>
 			<input class="duplicate" type="button" value="Dupliquer" />
