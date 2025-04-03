@@ -90,7 +90,8 @@ Extrafield_workdays = Jours de la semaine travaillés (semaines impaires)
 Extrafield_workdays2 = Jours de la semaine travaillés (semaines paires)
 Extrafield_dailyhours = Nombre d'heures travaillées par jour
 Extrafield_employee_btp = Salarié sur chantiers (BTP)
-
+Extrafield_product_task_name = Nom de la tâche associée au produit
+ExtrafieldToolTip_product_task_name = Lors de la création d'un proket de chantier avec une ligne de commande contenant ce produit
 #
 # About page
 #

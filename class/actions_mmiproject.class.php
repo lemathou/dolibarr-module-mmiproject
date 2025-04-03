@@ -225,6 +225,8 @@ class ActionsMMIProject extends MMI_Actions_1_0
 					// Uniquement si produit bien paramétré
 					if ($oline->product_type!=1 || !$oline->fk_product)
 						continue;
+
+					// Infos Product
 					$product->fetch($oline->fk_product);
 					//var_dump($product->array_options); //return -1;
 					$task_resources = [];
@@ -238,6 +240,20 @@ class ActionsMMIProject extends MMI_Actions_1_0
 					}
 					if (!$product->array_options['options_task_type'])
 						continue;
+
+					// Label
+					// Nom spécifique
+					//var_dump($product->array_options['options_task_name'], $product->label, $oline->product_label, $oline->desc);
+					if (!empty($product->array_options['options_task_name']) && ((!empty($oline->product_label) && $product->label != $oline->product_label) || (!empty($oline->desc) && $product->label != $oline->desc))) {
+						$task_label = $product->array_options['options_task_name'];
+					}
+					elseif ($oline->product_label) {
+						$task_label = $oline->product_label;
+					}
+					else {
+						$task_label = $oline->desc;
+					}
+					$task_label .= ' [depuis Commande]';
 					
 					//var_dump($oline);
 					$oline->fetch_optionals();
@@ -259,7 +275,7 @@ class ActionsMMIProject extends MMI_Actions_1_0
 					if (empty($assoc[$oline->id])) {
 						$task = new Task($db);
 						$task->fk_project = $project->id;
-						$task->label = ($oline->libelle ?$oline->libelle :$oline->desc).' [depuis Commande]';
+						$task->label = $task_label;
 						$task->array_options['options_fk_commandedet'] = $oline->id;
 						$task->ref = $this->getNextValue($object->thirdparty, $task);
 						//var_dump($oline, $task);
@@ -302,8 +318,6 @@ class ActionsMMIProject extends MMI_Actions_1_0
 					$task->planned_workload = round($oline->array_options['options_heure']*3600);
 
 					// Infos Product
-					$product = new Product($db);
-					$product->fetch($oline->fk_product);
 					//var_dump($product->id);
 					$task->array_options['options_type'] = $product->array_options['options_task_type'];
 					$task->array_options['options_fk_product'] = $product->id;

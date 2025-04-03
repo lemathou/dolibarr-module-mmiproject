@@ -509,7 +509,8 @@ class modMMIProject extends DolibarrModules
 		$extrafields->addExtraField('price', $langs->trans('Extrafield_actual_price_value'), 'price',  100,  "", 'resource',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_acquisition_actual_price_value'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 		
 		// Product
-		$extrafields->addExtraField('task_type', $langs->trans('Extrafield_task_type'), 'select',  100,  3, 'product',  0, 0, '', array('options'=>array('1'=>'Déplacement de personne','2'=>'Réalisation/Pose','3'=>'Installation/Protection/Manutention','4'=>'Autre prestation de service à compter','5'=>'Location avec opérateur','6'=>'Organisation')), 1,'', -1, $langs->trans('ExtrafieldToolTip_task_type'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('task_type', $langs->trans('Extrafield_task_type'), 'select',  75,  3, 'product',  0, 0, '', array('options'=>array('1'=>'Déplacement de personne','2'=>'Réalisation/Pose','3'=>'Installation/Protection/Manutention','4'=>'Autre prestation de service à compter','5'=>'Location avec opérateur','6'=>'Organisation')), 1,'', -1, $langs->trans('ExtrafieldToolTip_task_type'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
+		$extrafields->addExtraField('task_name', $langs->trans('Extrafield_product_task_name'), 'varchar',  75,  "64", 'product',  0, 0, '', '', 1,'', -1, $langs->trans('ExtrafieldToolTip_product_task_name'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled', 0);
 		
 		// Project
 		$extrafields->addExtraField('fk_commande', $langs->trans('Extrafield_fk_commande'), 'link', 100, '', 'projet', 0, 0, '', array('options'=>array('Commande:commande/class/commande.class.php'=>null)), 1, '', 5, $langs->trans('ExtrafieldToolTip_fk_commande'), '', $conf->entity, 'mmiproject@mmiproject', '$conf->mmiproject->enabled');
