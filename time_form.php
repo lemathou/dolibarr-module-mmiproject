@@ -600,7 +600,7 @@ foreach($time_users as $userid=>$time_user) {
 		<td><?php echo $hours; ?></td>
 		<td><?php foreach($time_user['segments2'] as $segment) { echo '<span>'.$segment[0].'-'.$segment[1].'</span> / '; } ?></td>
 		<td style="color: red;"><?php echo implode(', ', $anomalies); ?></td>
-		<td><?php if (isset($time_user['projects'])) foreach($time_user['projects'] as $r) echo '<a href="'.$projects[$r['fk_projet']]['url'].'">'.$projects[$r['fk_projet']]['title'].'</a>, '; ?></td>
+		<td><?php if (isset($time_user['projects'])) foreach($time_user['projects'] as $r) echo '<a href="'.$projects[$r]['url'].'">'.$projects[$r]['title'].'</a>, '; ?></td>
 	</tr>
 <?php } ?>
 </tbody>
@@ -644,7 +644,7 @@ foreach($time_users as $userid=>$time_user) {
 		<td><?php echo $hours; ?></td>
 		<td><?php foreach($time_user['segments2'] as $segment) { echo '<span>'.$segment[0].'-'.$segment[1].'</span> / '; } ?></td>
 		<td style="color: red;"><?php echo implode(', ', $anomalies); ?></td>
-		<td><?php if (isset($time_user['projects'])) foreach($time_user['projects'] as $r) echo '<a href="'.$projects[$r['fk_projet']]['url'].'">'.$projects[$r['fk_projet']]['title'].'</a>, '; ?></td>
+		<td><?php if (isset($time_user['projects'])) foreach($time_user['projects'] as $r) echo '<a href="'.$projects[$r]['url'].'">'.$projects[$r]['title'].'</a>, '; ?></td>
 	</tr>
 <?php } ?>
 </tbody>
