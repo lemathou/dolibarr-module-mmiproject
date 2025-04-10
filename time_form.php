@@ -293,6 +293,7 @@ if ($q) {
 	while($r=$db->fetch_array($q)) {
 		//var_dump($r['rowid']);
 		$projects[$r['rowid']] = $r;
+		$projects[$r['rowid']]['url'] = '/projet/tasks/time.php?withproject=1&projectid='.$r['rowid'];
 	}
 }
 
@@ -320,7 +321,7 @@ if (!empty($jalons_ids)) {
 $time_day = [];
 $time_day2 = [];
 $time_users	= [];
-$sql = 'SELECT ptt.*
+$sql = 'SELECT ptt.*, pt.fk_projet
 	FROM '.MAIN_DB_PREFIX.'element_time ptt
 	INNER JOIN '.MAIN_DB_PREFIX.'projet_task pt
 		ON pt.rowid=ptt.fk_element AND ptt.elementtype="task"
@@ -340,10 +341,35 @@ if ($q) {
 	while($r=$db->fetch_array($q)) {
 		$t0 = strtotime($r['element_datehour']);
 		$t1 = $t0 + $r['element_duration'];
+		$time0 = date('H:i', $t0);
+		$time1 = date('H:i', $t1);
 		//var_dump($r);
 		$time_users[$r['fk_user']]['l'][] = $r;
+		$time_users[$r['fk_user']]['projects'][$r['fk_projet']] = $r['fk_projet'];
 		$time_users[$r['fk_user']]['duration'] += $r['element_duration'];
-		$time_users[$r['fk_user']]['segments'][] = [date('H:i', $t0), date('H:i', $t1)];
+		$time_users[$r['fk_user']]['segments'][] = [$time0, $time1];
+		$segment2ok = false;
+		//var_dump($r);
+		if (isset($time_users[$r['fk_user']]['segments2'])) {
+			foreach($time_users[$r['fk_user']]['segments2'] as $k=>$segment) {
+				if ($time0 == $segment[1]) {
+					// Segment is inside
+					$time_users[$r['fk_user']]['segments2'][$k][1] = $time1;
+					$segment2ok = true;
+					break;
+				}
+				elseif ($time1 == $segment[0]) {
+					// Segment is outside
+					$time_users[$r['fk_user']]['segments2'][$k][0] = $time0;
+					$segment2ok = true;
+					break;
+				}
+			}
+			//var_dump($segment2ok);
+		}
+		if (!$segment2ok) {
+			$time_users[$r['fk_user']]['segments2'][] = [$time0, $time1];
+		}
 		$time_day[$r['rowid']] = $r;
 		if (empty($time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']]))
 			$time_day2[$r['element_datehour'].'-'.$r['element_duration'].'-'.$r['fk_element']] = ['rows'=>[], 'userids'=>[]];
@@ -546,6 +572,7 @@ if (!empty($validated)) {
 		<th>Heures</th>
 		<th>Segments</th>
 		<th>Anomalies</th>
+		<th>Projets</th>
 	</tr>
 </thead>
 <tbody>
@@ -560,7 +587,7 @@ foreach($time_users as $userid=>$time_user) {
 	$hours = str_replace('.', ',', $hours);
 	$anomalies = [];
 	$t = NULL;
-	foreach($time_user['segments'] as $segment) {
+	foreach($time_user['segments2'] as $segment) {
 		if ($t && $segment[0] != $t && ! (substr($t, 0, 2) >= 12 && substr($t, 0, 2) <= 14)) {
 			$anomalies[] = $t.' - '.$segment[0];
 		}
@@ -571,8 +598,53 @@ foreach($time_users as $userid=>$time_user) {
 	<tr>
 		<td><?php echo $users[$userid]['name']; ?></td>
 		<td><?php echo $hours; ?></td>
-		<td><?php foreach($time_user['segments'] as $segment) { echo '<span>'.$segment[0].'-'.$segment[1].'</span> / '; } ?></td>
+		<td><?php foreach($time_user['segments2'] as $segment) { echo '<span>'.$segment[0].'-'.$segment[1].'</span> / '; } ?></td>
 		<td style="color: red;"><?php echo implode(', ', $anomalies); ?></td>
+		<td><?php if (isset($time_user['projects'])) foreach($time_user['projects'] as $r) echo '<a href="'.$projects[$r['fk_projet']]['url'].'">'.$projects[$r['fk_projet']]['title'].'</a>, '; ?></td>
+	</tr>
+<?php } ?>
+</tbody>
+</table>
+<?php } ?>
+
+<?php if ($time_admin) { ?>
+<h3>Résumé par salarié NON BTP</h3>
+<table border="1">
+<thead>
+	<tr>
+		<th>Salarié</th>
+		<th>Heures</th>
+		<th>Segments</th>
+		<th>Anomalies</th>
+		<th>Projets</th>
+	</tr>
+</thead>
+<tbody>
+<?php
+foreach($time_users as $userid=>$time_user) {
+	// Bypass user
+	if ($users[$userid]['employee_btp'] == 1)
+		continue;
+	
+	$hours = $time_user['duration']/3600;
+	$hours = round($hours, 2);
+	$hours = str_replace('.', ',', $hours);
+	$anomalies = [];
+	$t = NULL;
+	foreach($time_user['segments2'] as $segment) {
+		if ($t && $segment[0] != $t && ! (substr($t, 0, 2) >= 12 && substr($t, 0, 2) <= 14)) {
+			$anomalies[] = $t.' - '.$segment[0];
+		}
+		$t = $segment[1];
+	}
+	//var_dump($anomalies);
+	?>
+	<tr>
+		<td><?php echo $users[$userid]['name']; ?></td>
+		<td><?php echo $hours; ?></td>
+		<td><?php foreach($time_user['segments2'] as $segment) { echo '<span>'.$segment[0].'-'.$segment[1].'</span> / '; } ?></td>
+		<td style="color: red;"><?php echo implode(', ', $anomalies); ?></td>
+		<td><?php if (isset($time_user['projects'])) foreach($time_user['projects'] as $r) echo '<a href="'.$projects[$r['fk_projet']]['url'].'">'.$projects[$r['fk_projet']]['title'].'</a>, '; ?></td>
 	</tr>
 <?php } ?>
 </tbody>
@@ -623,7 +695,7 @@ $info_list = [];
 		<td rowspan="2" class="end_hour" align="right"><?php if ($datenew) echo $datefin=date('H:i', strtotime($row['element_datehour'])+$row['element_duration']); ?></td>
 		<td class="duration" align="right"><?php if ($datenew) echo $duree; ?></td>
 		<td><?php echo $users[$row['fk_user']]['name']; ?></td>
-		<td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid='.$project['title'].'">'.$project['title'].($project['fk_statut'] == 2 ?'  [Fermé]' :'').'</a>'; ?></td>
+		<td><?php echo '<a href="/projet/tasks/time.php?withproject=1&projectid='.$project['rowid'].'">'.$project['title'].($project['fk_statut'] == 2 ?'  [Fermé]' :'').'</a>'; ?></td>
 		<td><?php if (!empty($row['note'])) { if (!in_array($row['note'], $info_list)) $info_list[] = $row['note']; echo '<span style="cursor: help;" title="'.$row['note'].'">...</span>'; } ?></td>
 		<td>
 		<?php if (empty($user_pay[$row['fk_user']][$yearmonth]['month_hours_sign_date'])) { ?>
@@ -674,10 +746,10 @@ $info_list = [];
 				if ($fk_project==$task['fk_projet']) {
 					if ($fk_jalon>0) {
 						if ($fk_jalon==$task['fk_jalon_commandedet'])
-							$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label']];
+							$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'], 'jalon_id'=>$task['fk_jalon_commandedet']];
 					}
 					else {
-						$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label']];
+						$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'], 'jalon_id'=>$task['fk_jalon_commandedet']];
 					}
 				}
 			}
@@ -686,7 +758,22 @@ $info_list = [];
 				$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$project['title'].' =&gt; '.$task['label']];
 			}
 		}
-		echo $form->selectArray('taskid', $tasks_form, '', 'Choisir une tâche'); //fk_task
+		echo '<select name="taskid">';
+		$jalon_id = NULL;
+		// @todo sort by jalon
+		foreach($tasks_form as $taskid=>$task) {
+			if (!empty($task['jalon_id']) && (empty($jalon_id) || $jalon_id!=$task['jalon_id'])) {
+				if ($jalon_id)
+					echo '</optgroup>';
+				echo '<optgroup label="'.$jalons[$task['jalon_id']]['label'].'">';
+				$jalon_id = $task['jalon_id'];
+			}
+			echo '<option value="'.$taskid.'">'.$task['label'].'</option>';
+		}
+		if ($jalon_id)
+			echo '</optgroup>';
+		echo '</select>';
+		//echo $form->selectArray('taskid', $tasks_form, '', 'Choisir une tâche'); //fk_task
 		?></td>
 	</tr>
 	<tr>
