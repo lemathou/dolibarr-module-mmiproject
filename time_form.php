@@ -740,40 +740,45 @@ $info_list = [];
 		<td colspan="4"><?php
 		
 		$tasks_form = [];
+		$fk_project_actu = $fk_project;
+		$fk_jalon = NULL;
 		//var_dump($projects);
 		foreach($tasks as $task) {
-			if ($fk_project>0) {
-				if ($fk_project==$task['fk_projet']) {
-					if ($fk_jalon>0) {
-						if ($fk_jalon==$task['fk_jalon_commandedet'])
-							$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'], 'jalon_id'=>$task['fk_jalon_commandedet']];
-					}
-					else {
-						$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'], 'jalon_id'=>$task['fk_jalon_commandedet']];
-					}
-				}
-			}
-			else {
+			// Filtrage projet
+			if ($fk_project && $task['fk_projet'] != $fk_project)
+				continue;
+			// Nouveau projet
+			if ($fk_project_actu != $task['fk_projet']) {
+				$fk_project_actu = $task['fk_projet'];
 				$project = $projects[$task['fk_projet']];
-				$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$project['title'].' =&gt; '.$task['label']];
+				$tasks_form['P-'.$task['fk_projet']] = ['label'=>'['.$project['ref'].'] - '.$project['title'], 'disabled'=>true];
 			}
-		}
-		echo '<select name="taskid">';
-		$jalon_id = NULL;
-		// @todo sort by jalon
-		foreach($tasks_form as $taskid=>$task) {
-			if (!empty($task['jalon_id']) && (empty($jalon_id) || $jalon_id!=$task['jalon_id'])) {
-				if ($jalon_id)
-					echo '</optgroup>';
-				echo '<optgroup label="'.$jalons[$task['jalon_id']]['label'].'">';
-				$jalon_id = $task['jalon_id'];
+			// Nouveau Jalon
+			if ($task['fk_jalon_commandedet'] && $fk_jalon != $task['fk_jalon_commandedet'] && isset($jalons[$task['fk_jalon_commandedet']])) {
+				$fk_jalon = $task['fk_jalon_commandedet'];
+				$jalon = $jalons[$task['fk_jalon_commandedet']];
+				$tasks_form['J-'.$task['fk_jalon_commandedet']] = ['label'=>'-- '.$jalon['label'], 'disabled'=>true];
 			}
-			echo '<option value="'.$taskid.'">'.$task['label'].'</option>';
+			$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'], 'project_id'=>$task['fk_projet'], 'jalon_id'=>$task['fk_jalon_commandedet']];
 		}
-		if ($jalon_id)
-			echo '</optgroup>';
-		echo '</select>';
-		//echo $form->selectArray('taskid', $tasks_form, '', 'Choisir une tâche'); //fk_task
+		if (false) {
+			echo '<select name="taskid">';
+			$jalon_id = NULL;
+			// @todo sort by jalon
+			foreach($tasks_form as $taskid=>$task) {
+				if (!empty($task['jalon_id']) && (empty($jalon_id) || $jalon_id!=$task['jalon_id'])) {
+					if ($jalon_id)
+						echo '</optgroup>';
+					echo '<optgroup label="'.$jalons[$task['jalon_id']]['label'].'">';
+					$jalon_id = $task['jalon_id'];
+				}
+				echo '<option value="'.$taskid.'">'.$task['label'].'</option>';
+			}
+			if ($jalon_id)
+				echo '</optgroup>';
+			echo '</select>';
+		}
+		echo $form->selectArray('taskid', $tasks_form, '', 'Choisir une tâche'); //fk_task
 		?></td>
 	</tr>
 	<tr>
