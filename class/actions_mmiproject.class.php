@@ -474,6 +474,48 @@ class ActionsMMIProject extends MMI_Actions_1_0
 
 
 	/**
+	 * Overloading the doPreMassActions function : replacing the parent's function with the one below
+	 *
+	 * @param   array           $parameters     Hook metadatas (context, etc...)
+	 * @param   CommonObject    $object         The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param   string          $action         Current action (if set). Generally create or edit or null
+	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
+	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	public function doPreMassActions($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf, $user, $langs;
+
+		$error = 0; // Error counter
+		$print = '';
+
+		/* print_r($parameters); print_r($object); echo "action: " . $action; */
+		if ($this->in_context($parameters, 'projecttasktime')) {		// do something only for the context 'somecontext1' or 'somecontext2'
+			$massaction = GETPOST('massaction');
+			if ($massaction=='predelete') {
+				$print .= dol_get_fiche_head(null, '', '');
+				$print .= '<p>Suppression en masse ?</p>';
+				$print .= '<input type="hidden" name="massaction" value="delete" />';
+				$print .= '<p>Confirmation : <select class="flat width75 marginleftonly marginrightonly" id="confirm" name="confirm"><option value="yes">Oui</option>
+<option value="no" selected="">Non</option></select>';
+				$print .= '<input class="button valignmiddle confirmvalidatebutton" type="submit" value="Supprimer" onclick="$(\'select[id=massaction]\').remove();" /></p>';
+				$print .= dol_get_fiche_end();
+			}
+		}
+
+		if (!$error) {
+			// $this->results = array('myreturn' => 999);
+			// $this->resprints = 'A text to show';
+			$this->resprints = $print;
+			return 0; // or return 1 to replace standard code
+		} else {
+			// $this->errors[] = 'Error message';
+			return -1;
+		}
+	}
+
+
+	/**
 	 * Overloading the doMassActions function : replacing the parent's function with the one below
 	 *
 	 * @param   array           $parameters     Hook metadatas (context, etc...)
@@ -487,11 +529,17 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		global $conf, $user, $langs;
 
 		$error = 0; // Error counter
+		$massaction = $_POST['massaction'];	// do something only for the context 'somecontext1' or 'somecontext2'
+		//var_dump($_POST, $parameters, $action, $massaction);
 
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {		// do something only for the context 'somecontext1' or 'somecontext2'
-			foreach ($parameters['toselect'] as $objectid) {
-				// Do action on each object id
+		if ($this->in_context($parameters, 'projecttasktime')) {		// do something only for the context 'somecontext1' or 'somecontext2'
+			if ($massaction == 'delete') {
+				$objectstatic = new TimeSpent($this->db);
+				foreach ($parameters['toselect'] as $objectid) {
+					$objectstatic->fetch($objectid);
+					$objectstatic->delete($user);
+				}
 			}
 		}
 
@@ -523,8 +571,9 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		$disabled = 1;
 
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if ($this->in_context($parameters, ['somecontext1', 'somecontext2'])) {		// do something only for the context 'somecontext1' or 'somecontext2'
-			$this->resprints = '<option value="0"'.($disabled ? ' disabled="disabled"' : '').'>'.$langs->trans("MMIProjectMassAction").'</option>';
+		if ($this->in_context($parameters, ['projecttasktime'])) {		// do something only for the context 'somecontext1' or 'somecontext2'
+			//echo 'COUCOU';
+			$this->resprints = '<option value="predelete">'.img_picto('', 'delete', 'class="pictofixedwidth"').$langs->trans("Delete").'</option>';
 		}
 
 		if (!$error) {
