@@ -42,6 +42,7 @@ $arrayofparameters = array(
 	'PROJECT_ALLOW_COMMENT_ON_PROJECT'=>array('type'=>'yesno','enabled'=>1),
 	'PROJECT_ALLOW_COMMENT_ON_TASK'=>array('type'=>'yesno','enabled'=>1),
 	'TASK_CREATE_WITHOUT_DEFAULT_CONTACT'=>array('type'=>'yesno','enabled'=>1),
+	'PROJECT_TASK_LIST_LABEL_DISP'=>array('type'=>'array','list'=>['default'=>'PROJECT_TASK_LIST_LABEL_DISP_DEFAULT', 'nowrap'=>'PROJECT_TASK_LIST_LABEL_DISP_NOWRAP', 'full'=>'PROJECT_TASK_LIST_LABEL_DISP_FULL'],'enabled'=>1),
 
 	'MMIPROJECT_HOLIDAYS'=>array('type'=>'separator','enabled'=>1),
 	'MMIHOLIDAY_ALLOW_REQUEST_WITHOUT_OPEN_DAY'=>array('type'=>'yesno','enabled'=>1),

@@ -47,6 +47,11 @@ TASK_CREATE_WITHOUT_DEFAULT_CONTACT = Ne pas assigner de contact par défaut à 
 MMIPROJECT_HOLIDAYS = Gestion des congés
 MMIHOLIDAY_ALLOW_REQUEST_WITHOUT_OPEN_DAY = Autoriser les demandes de congés payés sur des jours fériés (utile lorsque c'est un jour de solidarité)
 
+PROJECT_TASK_LIST_LABEL_DISP = Affichage du libellé de la tâche dans les listes
+PROJECT_TASK_LIST_LABEL_DISP_DEFAULT = Affichage par défaut (sur une ligne en coupant si trop long)
+PROJECT_TASK_LIST_LABEL_DISP_NOWRAP = Afficherle libellé complet sans changer de ligne
+PROJECT_TASK_LIST_LABEL_DISP_FULL = Afficher le libellé complet (sur plusieurs lignes au besoin)
+
 #
 # ExtraFields
 #
