@@ -552,6 +552,7 @@ function parseTime2(t)
 <br />
 
 <?php
+
 $validated = [];
 foreach($userids as $userid) {
 	if (!empty($user_pay[$userid][$yearmonth]['month_hours_sign_date'])) {
@@ -561,8 +562,13 @@ foreach($userids as $userid) {
 if (!empty($validated)) {
 	echo '<p class="alert">Attention, les utilisateurs suivant ont déjà validé le mois '.date_reverse($yearmonth).' : '.implode(', ', $validated).'</p>';
 }
-?>
 
+if (!empty($fk_project)) {
+	$project = $projects[$fk_project];
+	echo '<p>Projet sélectionné : <a href="/projet/card.php?id='.$fk_project.'">'.$project['title'].'</a> | <a href="/projet/tasks.php?action=create&id='.$fk_project.'&contextpage=projecttasklist&backtopage=%2Fprojet%2Ftasks.php%3Fid%3D'.$fk_project.'">Ajouter une tâche</a></p>';
+}
+
+?>
 <?php if ($time_admin) { ?>
 <h3>Résumé par salarié BTP</h3>
 <table border="1">
