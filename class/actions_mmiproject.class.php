@@ -806,6 +806,22 @@ class ActionsMMIProject extends MMI_Actions_1_0
 		}
 		if ($this->in_context($parameters, ['tasklist', 'projecttaskscard']))
 		{
+			$form = new Form($this->db);
+
+			$projectstatic = new Project($this->db);
+			$search_fk_c_type_contact_project = GETPOST('search_fk_c_type_contact_project', 'int');
+			$print .= '<div class="divsearchfield">';
+			$print .= '<label for="search_fk_c_type_contact_project">Rôle Projet :</label>';
+			$print .= $form->selectarray('search_fk_c_type_contact_project', $projectstatic->liste_type_contact('INTERNAL', 'rowid', 0, 1), $search_fk_c_type_contact_project, 1);
+			$print .= '</div>';
+
+			$taskstatic = new Task($this->db);
+			$search_fk_c_type_contact_task = GETPOST('search_fk_c_type_contact_task', 'int');
+			$print .= '<div class="divsearchfield">';
+			$print .= '<label for="search_fk_c_type_contact_task">Rôle tâche :</label>';
+			$print .= $form->selectarray('search_fk_c_type_contact_task', $taskstatic->liste_type_contact('INTERNAL', 'rowid', 0, 1), $search_fk_c_type_contact_task, 1);
+			$print .= '</div>';
+
 			$search_no_advanced_100 = GETPOST('search_no_advanced_100', 'bool');
 			$print .= '<div class="divsearchfield">';
 			$print .= '<input type="checkbox" id="search_no_advanced_100" name="search_no_advanced_100" value="1"'.($search_no_advanced_100 ?' checked="checked"' :'').' /> <label for="search_no_advanced_100">Sans finis 100%</for>';
@@ -837,8 +853,47 @@ class ActionsMMIProject extends MMI_Actions_1_0
 				$tblalias = $this->in_context($parameters, ['tasklist']) ?'ef' :'efpt';
 				$print .= " AND ($tblalias.permanent IS NULL OR $tblalias.permanent = 0)";
 			}
+
 			if (GETPOST('search_no_advanced_100', 'bool'))
 				$print .= " AND (t.progress IS NULL OR t.progress < 100)";
+			
+			if (($search_fk_c_type_contact_task = GETPOST('search_fk_c_type_contact_task', 'int'))>0) {
+				$search_project_user = GETPOST('search_project_user', getDolGlobalInt('PROJECT_SEARCH_USER_MULTIPLE') ?'array:int' :'int');
+				$search_project_user_multiple_and = getDolGlobalInt('PROJECT_SEARCH_USER_MULTIPLE_AND');
+				$search_task_user = GETPOST('search_task_user', getDolGlobalInt('PROJECT_SEARCH_USER_MULTIPLE') ?'array:int' :'int');
+				$search_task_user_multiple_and = getDolGlobalInt('PROJECT_SEARCH_USER_MULTIPLE_AND');
+				if (is_array($search_task_user)) {
+					if ($search_task_user_multiple_and) {
+						foreach($search_task_user as $i=>$uid) {
+							$print .= " AND ect$i.fk_c_type_contact = ".$search_fk_c_type_contact_task." AND ect$i.element_id = t.rowid AND 	ect$i.fk_socpeople = ".((int) $uid);
+						}
+					}
+					else {
+						$print .= " AND ect.fk_c_type_contact = ".$search_fk_c_type_contact_task." AND ect.element_id = t.rowid AND ect.fk_socpeople IN (".implode(',', $search_task_user).")";
+					}
+				}
+				elseif ($search_task_user > 0) {
+					$print .= " AND ect.fk_c_type_contact = ".$search_fk_c_type_contact_task." AND ect.element_id = t.rowid AND ect.fk_socpeople = ".((int) $search_task_user);
+				}
+			}
+			if (($search_fk_c_type_contact_project = GETPOST('search_fk_c_type_contact_project', 'int'))>0) {
+				if (!empty($search_project_user)) {
+					if (is_array($search_project_user)) {
+						if ($search_project_user_multiple_and) {
+							foreach($search_project_user as $i=>$uid) {
+								$print .= " AND ecp$i.fk_c_type_contact = ".$search_fk_c_type_contact_project." AND ecp$i.element_id = p.rowid AND 	ecp$i.fk_socpeople = ".((int) $uid);
+							}
+						}
+						else {
+							$print .= " AND ecp.fk_c_type_contact = ".$search_fk_c_type_contact_project." AND ecp.element_id = p.rowid AND ecp.fk_socpeople IN (".implode(',', $search_project_user).")";
+						}
+					}
+					elseif ($search_project_user > 0) {
+						// TODO Replace this with a EXISTS and remove the link to table + DISTINCT
+						$print .= " AND ecp.fk_c_type_contact = ".$search_fk_c_type_contact_project." AND ecp.element_id = p.rowid AND ecp.fk_socpeople = ".((int) $search_project_user);
+					}
+				}
+			}
 		}
 
 		if (! $error)
