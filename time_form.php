@@ -745,7 +745,7 @@ $info_list = [];
 		//var_dump($projects);
 		foreach($tasks as $task) {
 			// Filtrage projet
-			if ($fk_project && $task['fk_projet'] != $fk_project)
+			if ($fk_project>0 && $task['fk_projet'] != $fk_project)
 				continue;
 			// Nouveau projet
 			if ($fk_project_actu != $task['fk_projet']) {
