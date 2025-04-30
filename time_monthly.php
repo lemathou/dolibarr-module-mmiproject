@@ -213,7 +213,7 @@ foreach($solidays as $i) {
 }
 //var_dump($solidays, $soliday);
 $solidtime = strtotime($soliday);
-$solidweeknum = date('W', $solitime);
+$solidweeknum = weeknum($solitime);
 
 //var_dump($task_user);
 
@@ -307,7 +307,7 @@ function date_workday($employ, $day)
 
 	// Days worked in the week
 	if (!empty($employ['days']) || !empty($employ['days2'])) {
-		$weeknum = date('W', $ldate);
+		$weeknum = weeknum($ldate);
 		if ($weeknum%2 == 1) {
 			if (in_array($daynumofweek, $employ['days']))
 				$date_workday = 1;
@@ -330,6 +330,35 @@ function date_workday($employ, $day)
 	}
 
 	return $date_workday;
+}
+
+function weeknum($ldate)
+{
+	$weeknum = (int)date('W', $ldate);
+	$day = date('Y-m-d', $ldate);
+	if (substr($day, 5, 2)=='12' && $weeknum=='1') {
+		$weeknum = 53;
+	}
+	elseif(substr($day, 5, 2)=='01' && $weeknum>='52') {
+		$weeknum = (int)date('W', $ldate-86400*7)+1; // Semaine précédente +1
+	}
+	return $weeknum;
+}
+
+function week_id($ldate)
+{
+	$weeknum = (int)date('W', $ldate);
+	$day = date('Y-m-d', $ldate);
+	$week_id = substr($day, 0, 5).$weeknum;
+	if (substr($day, 5, 2)=='12' && $weeknum=='1') {
+		$weeknum = 53;
+		$week_id = substr($day, 0, 5).$weeknum;
+	}
+	elseif(substr($day, 5, 2)=='01' && $weeknum>='52') {
+		$weeknum = (int)date('W', $ldate-86400*7)+1; // Semaine précédente +1
+		$week_id = date('Y', $ldate-86400*7).'-'.$weeknum;
+	}
+	return $week_id;
 }
 
 // Valeurs par défaut
@@ -447,6 +476,7 @@ foreach($cumul_week as $j=>&$r) {
 
 		// Travaillable
 		$date_workday = date_workday($employ, $ddate);
+		$d += $date_workday;
 
 		$r['nbworkdays'] += $date_workday;
 		$r['weekly'] += $date_workday*$employ['daily'];
@@ -571,7 +601,7 @@ for ($i=1;$i<=$month_number;$i++) {
 		'dayofweek' => strftime('%A', $ldate),
 		'daynumofweek' => $daynumofweek,
 		'date' => date('d/m/Y', $ldate),
-		'weeknum' => date('W', $ldate),
+		'weeknum' => weeknum($ldate),
 		'isferie' => $isferie,
 		//'year' => date('Y', $ldate),
 		'timespent' => [], // Optionnal detailled list
@@ -585,7 +615,8 @@ for ($i=1;$i<=$month_number;$i++) {
 $employ = $defaultemploy;
 foreach($holidays as $ddate) {
 	$ldate = strtotime($ddate);
-	$weeknum = date('W', $ldate);
+	$weeknum = weeknum($ldate);
+	$week_id = week_id($ldate);
 	$daynumofweek = date('w', $ldate);
 	$lyearmonth = substr($ddate, 0, 7);
 	$lyear = substr($ddate, 0, 4);
@@ -602,7 +633,7 @@ foreach($holidays as $ddate) {
 
 	if ($lmonth==$month)
 		$l[$ddate]['ferie_duration'] = $date_workday*$employ['daily'];
-	$cumul_week[$lyear.'-'.$weeknum]['ferie_duration'] += $date_workday*$employ['daily'];
+	$cumul_week[$week_id]['ferie_duration'] += $date_workday*$employ['daily'];
 	$cumul_mois[$lyearmonth]['ferie_duration'] += $date_workday*$employ['daily'];
 }
 //die();
@@ -911,7 +942,10 @@ if ($q) {
 		foreach($days as $day) {
 			$ldate = strtotime($day);
 			$daynumofweek = date('w', $ldate);
-			$weeknum = date('W', $ldate);
+			$weeknum = weeknum($ldate);
+			$mois_id = substr($day, 0, 7);
+			$week_id = week_id($ldate);
+
 			$ddate = $day;
 
 			if (! employ_check($employs, $employ, $ddate))
@@ -925,10 +959,10 @@ if ($q) {
 			// Travaillable
 			$date_workday = date_workday($employ, $ddate);
 
-			$cumul_mois[substr($day, 0, 7)]['arret_'.$type] += $date_workday*$employ['daily'];
-			$cumul_mois[substr($day, 0, 7)]['arret_'.$type.'_j'] += $date_workday;
-			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type] += $date_workday*$employ['daily'];
-			$cumul_week[substr($day, 0, 5).$weeknum]['arret_'.$type.'_j'] += $date_workday;
+			$cumul_mois[$mois_id]['arret_'.$type] += $date_workday*$employ['daily'];
+			$cumul_mois[$mois_id]['arret_'.$type.'_j'] += $date_workday;
+			$cumul_week[$week_id]['arret_'.$type] += $date_workday*$employ['daily'];
+			$cumul_week[$week_id]['arret_'.$type.'_j'] += $date_workday;
 
 			if ($type=='rcr') {
 				$hsup_prev_rcr_pris += $date_workday*$employ['daily'];
