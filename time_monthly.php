@@ -420,7 +420,7 @@ for($i=1;$i<=$periode_fin_weeknum;$i++) {
 
 $employ = $defaultemploy;
 //var_dump($employ); die();
-foreach($cumul_week as &$r) {
+foreach($cumul_week as $j=>&$r) {
 	$r['nbferies'] = 0;
 	$r['nbferiesdim'] = 0;
 	$r['nbworkdays'] = 0;
@@ -428,6 +428,9 @@ foreach($cumul_week as &$r) {
 	$d = 0;
 	for ($i=0;$i<=6;$i++) {
 		$ldate = strtotime($r['dates']['week_start'])+$i*86400;
+		// Check jour à prendre en compte début d'exercice
+		if ($j == $periode_year_debut.'-'.$periode_debut_weeknum && $ldate < $periode_debut_ts)
+			continue;
 		$daynumofweek = ($i==6 ?0 :($i+1));
 		$ddate = date('Y-m-d', $ldate);
 		$isferie = in_array($ddate, $holidays);
@@ -943,7 +946,10 @@ $ctheo = 0;
 $c = 0;
 foreach($cumul_week as &$r) {
 	$r['effectif'] = $r['duration'] + $r['deplacement_duration'] + $r['arret_formation'];
-	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_rcr'] + $r['arret_autre'];
+	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_rcr'] + $r['arret_autre'] - $r['hsup'] - $r['decal_hsup_conge'];
+	// Heures corrigées par admin
+	if (!empty($r['hfix']))
+		$r['comptabilise'] += $r['hfix'];
 	$r['delta'] = $r['comptabilise'] - $r['weekly'];
 	$r['paye'] = $r['effectif'] + $r['ferie_duration'] + $r['arret_rcr'] - ($solidweeknum==$r['weeknum'] ?$l[$soliday]['daily'] :0);
 	
