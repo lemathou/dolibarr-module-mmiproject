@@ -337,10 +337,10 @@ function weeknum($ldate)
 	$weeknum = (int)date('W', $ldate);
 	$day = date('Y-m-d', $ldate);
 	if (substr($day, 5, 2)=='12' && $weeknum=='1') {
-		$weeknum = 53;
+		$weeknum = 1; // Normal
 	}
 	elseif(substr($day, 5, 2)=='01' && $weeknum>='52') {
-		$weeknum = (int)date('W', $ldate-86400*7)+1; // Semaine précédente +1
+		$weeknum = 52; // Normal
 	}
 	return $weeknum;
 }
@@ -429,7 +429,7 @@ $total = $model;
 
 $cumul_week = [];
 
-for($i=$periode_debut_weeknum;$i<=53;$i++) {
+for($i=$periode_debut_weeknum;$i<=52;$i++) {
 	$dates = getStartAndEndDate($i, $periode_year_debut);
 	if ($dates['week_start']>=$periode_year_fin)
 		break;
