@@ -435,10 +435,11 @@ foreach($cumul_week as &$r) {
 			$r['nbferies']++;
 		if ($isferie && $daynumofweek==0)
 			$r['nbferiesdim']++;
+			// on ne comptabilise pas
 		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
 			continue;
 
-		if (! employ_check($employs, $employ, $ddate))
+		if (! employ_check($employs, $employ, $ddate, $r))
 			continue;
 
 		// Travaillable
@@ -447,6 +448,11 @@ foreach($cumul_week as &$r) {
 		$r['nbworkdays'] += $date_workday;
 		$r['weekly'] += $date_workday*$employ['daily'];
 	}
+	// Dernier contrat valide cette semaine
+	$r['employ'] = $employ;
+	$r['daily'] = $r['employ']['daily'];
+	// Workday / Workhours
+	$r['nbworkdays'] = $d;
 	//var_dump($r);
 }
 unset($r);
