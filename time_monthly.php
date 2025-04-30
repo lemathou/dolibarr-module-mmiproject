@@ -944,9 +944,11 @@ $hsup_prev_decale_reste = $hsup_prev_decale - $hsup_prev_rcr_pris;
 $cdelta = 0;
 $ctheo = 0;
 $c = 0;
-foreach($cumul_week as &$r) {
+foreach($cumul_week as $j=>&$r) {
 	$r['effectif'] = $r['duration'] + $r['deplacement_duration'] + $r['arret_formation'];
 	$r['comptabilise'] = $r['effectif'] + $r['arret_cp'] + $r['arret_maladie'] + $r['arret_rcr'] + $r['arret_autre'] - $r['hsup'] - $r['decal_hsup_conge'];
+	if ($j == $periode_year_debut.'-'.$periode_debut_weeknum)
+		$r['comptabilise'] += $hsup_prev_decale_reste;
 	// Heures corrigées par admin
 	if (!empty($r['hfix']))
 		$r['comptabilise'] += $r['hfix'];
@@ -1291,7 +1293,9 @@ if (!empty($holidays_aff)) {
 // Affichage semaines
 
 if (!empty($weeks_aff)) {
-	echo '<p>Attention, les RTT ne sont volontairement pas ajoutées au delta, en effet, l\'idée est justement de les utiliser pour abaisser le delta !</p>';
+	echo '<p>Attention, les RTT ne sont volontairement pas ajoutées au delta, en effet, l\'idée est justement de les utiliser pour abaisser le delta !</p>';	if (!empty($hsup_prev_decale)) {
+		echo '<p><b style="color: red;">Heures décalées depuis l\'exercice précédent : '.$hsup_prev_decale.' / Posées en RCR : '.$hsup_prev_rcr_pris.' / Reste à poser : '. $hsup_prev_decale_reste.'</b></p>';
+	}
 	echo '<table border="1" cellpadding="2" id="cumul_week">';
 	echo '<caption>Récap semaines</caption>';
 	echo '<thead>';
@@ -1329,6 +1333,7 @@ if (!empty($weeks_aff)) {
 	echo '</tr>';
 	echo '</thead>';
 	echo '<tbody>';
+	$prems = true;
 	foreach($cumul_week as &$r) {
 		echo '<tr>';
 		echo '<td>'.$r['year'].'</td>';
@@ -1345,7 +1350,7 @@ if (!empty($weeks_aff)) {
 		echo '<td>'.duration_aff($r['ferie_duration']).'</p>';
 		echo '<td>'.duration_aff($r['arret_cp']).'</p>';
 		echo '<td>'.duration_aff($r['arret_rtt']).'</p>';
-		echo '<td>'.duration_aff($r['arret_rcr']).'</p>';
+		echo '<td>'.duration_aff($r['arret_rcr']).($prems && $hsup_prev_decale_reste ?' + '.$hsup_prev_decale_reste :'').'</p>';
 		echo '<td>'.duration_aff($r['arret_maladie']).'</p>';
 		echo '<td>'.duration_aff($r['arret_autre']).'</p>';
 
@@ -1362,6 +1367,9 @@ if (!empty($weeks_aff)) {
 		echo '<td>'.duration_aff($r['cumul_theo']).'</p>';
 		echo '<td style="color: '.($r['cumul_delta']>=0 ?'green' :'red').';">'.duration_aff($r['cumul_delta']).'</p>';
 		echo '</tr>';
+
+		if ($prems)
+			$prems = false;
 	}
 	unset($r);
 	echo '</tbody>';
