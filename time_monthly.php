@@ -351,11 +351,9 @@ function week_id($ldate)
 	$day = date('Y-m-d', $ldate);
 	$week_id = substr($day, 0, 5).$weeknum;
 	if (substr($day, 5, 2)=='12' && $weeknum=='1') {
-		$weeknum = 53;
-		$week_id = substr($day, 0, 5).$weeknum;
+		$week_id = date('Y', $ldate+86400*7).'-'.$weeknum;
 	}
 	elseif(substr($day, 5, 2)=='01' && $weeknum>='52') {
-		$weeknum = (int)date('W', $ldate-86400*7)+1; // Semaine précédente +1
 		$week_id = date('Y', $ldate-86400*7).'-'.$weeknum;
 	}
 	return $week_id;
