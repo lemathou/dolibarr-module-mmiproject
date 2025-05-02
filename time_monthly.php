@@ -739,7 +739,7 @@ if ($q) {
 				continue;
 
 			// Jour férié, samedi, dimanche => pas comptabilisé
-			if (in_array($ddate, $holidays) || in_array($daynumofweek, [0, 6]))
+			if ((in_array($ddate, $holidays) && !$ddate != $solidays) || in_array($daynumofweek, [0, 6]))
 				continue;
 
 			// Travaillable
