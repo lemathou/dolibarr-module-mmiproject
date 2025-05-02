@@ -739,7 +739,7 @@ if ($q) {
 				continue;
 
 			// Jour férié, samedi, dimanche => pas comptabilisé
-			if ((in_array($ddate, $holidays) && !$ddate != $solidays) || in_array($daynumofweek, [0, 6]))
+			if ((in_array($ddate, $holidays) && $ddate != $soliday) || in_array($daynumofweek, [0, 6]))
 				continue;
 
 			// Travaillable
@@ -950,9 +950,8 @@ if ($q) {
 				continue;
 
 			// Samedi, Dimanche, Férie => on compte pas
-			if (in_array($day, $holidays) || in_array($daynumofweek, [0, 6]))
+			if ((in_array($day, $holidays) && $day != $soliday) || in_array($daynumofweek, [0, 6]))
 				continue;
-
 
 			// Travaillable
 			$date_workday = date_workday($employ, $ddate);
