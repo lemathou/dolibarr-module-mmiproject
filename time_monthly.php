@@ -1517,6 +1517,40 @@ if (!empty($month_aff)) {
 	echo '</table>';
 }
 
+?>
+
+<hr />
+<h2>LEXIQUE TABLEAU RÉCAPITULATIF DES HEURES</h2>
+<p>Vous trouverez ci-dessous une explication reprenant chaque colonne. Si malgré tout vous avez des questions merci de demander des précisions.</p>
+
+<p><b>Mois :</b> chaque ligne correspond à 1 mois. Cette colonne est proposée en année comptable soir du 01/05 au 30/04</p>
+<p><b>Jours :</b> cela correspond au nombre de jour total dans le mois</p>
+<p><b>Jours travaillables :</b> Cela correspond au nombre de jour ou le salarié peut travailler dans le mois</p>
+<p><b>Heures travaillables :</b> c’est le nombre d’heures que le salarié peut effectuer dans le mois en fonction du nombre d’heures définies dans son contrat de travail. (exemple pour un contrat à 35h par semaine. Le mois de février compte 20 jours travaillables). Une journée de travail pour un contrat à 35h est de 7h de travail par jour. Par conséquent le salarié devra travailler 20 jours X 7h = 140h) cet exemple est un cas simple puisqu’avec la modulation du temps de travail notamment pour les personnes présente sur les chantiers cette règle ne s’applique pas forcément.</p>
+
+<p><b>Travail :</b> total du nombre d’heures saisies dans dolibarr</p>
+<p><b>Dépl :</b> cela correspond au nombre d’heures de déplacement pour vous rendre sur les chantiers</p>
+<p><b>Form :</b> correspond au nombre d’heures lorsque vous êtes en formation (par un organisme ou autre)</p>
+<p><b>Férié :</b> correspond au nombre d’heure pour les jours fériés. Les jours fériés sont rémunérés.</p>
+<p><b>CP :</b> congés payés. Nombre de jours pris dans le mois (les congés doivent être acquis et font l’objet d’une validation de votre supérieur hiérarchique).</p>
+<p><b>RCR : repos compensateur de remplacement :</b> cela permet de récupérer des jours de repos en échange d’heures supplémentaires effectuées</p>
+<p><b>Maladie :</b> Nombre d’heures d’absence du salarié (en fonction du nombre d’heure du contrat) justifié par un arrêt maladie</p>
+<p><b>Autre :</b> Absence injustifié / congés sans solde</p>
+<p><b>Heures payées :</b>  heures supplémentaires payées</p>
+<p><b>Heures décalées :</b> heures supplémentaires acquises durant l’année comptable à décaler sur l’autre exercice</p>
+<p><b>Effectif (trav + depl + form) :</b> somme des 3 colonnes</p>
+<p><b>Comptabilisé (effectif + abs) :</b> somme du travail effectif (colonne précédente + le nombre d’heure d’absence)</p>
+<p><b>Théorique :</b> nombre d’heure en théorie que vous devez effectuer dans le mois</p>
+<p><b>Delta :</b> différence entre colonne « comptabilisé » et colonne « théorique » du mois en cours si vous avez un (-) c’est que vous n’avez pas effectué les heures théorique du mois, si vous êtes en (+) c’est que vous avez des heures d’avance</p>
+<p><b>Payé :</b> Ne pas tenir compte de cette colonne car l’ensemble du personnel est en contrat annualisé.</p>
+<p><b>Payé CP :</b> Nombre d’heure payé avec l’acquisition de vos congés payés (soit 2,5jrs par mois pour les mi-temps et temps complet)</p>
+<p><b>Payé maladie :</b> 100 % du salaire brut du mois précédant l’arrêt du 4e au 48e jour d'arrêt pour les ouvriers du bâtiment et pour les ETAM 100% du salaire brut du mois précédent l’arrêt, + 1/12 des primes soumises à cotisations des 12 derniers mois, avec application ou non d'une carence selon la garantie souscrite par votre employeur, du 1er au 90e jour d'arrêt.</p>
+<p><b>Cumul comptabilisé :</b> somme de la colonne comptabilisé (effectif + abs) + payé CP + payé maladie</p>
+<p><b>Cumul théorique :</b> cumul du nombre d’heures de mois en mois jusqu’à la fin de l’exercice (30 avril)</p>
+<p><b>Cumul delta :</b> nombre d’heures qui reste à effectuer ou nombre d’heures en plus acquis.</p>
+
+<?php
+
 if ($right_contract_all) { ?>
 <script>
 $('input.hsup').change(function(){
