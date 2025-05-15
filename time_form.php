@@ -768,14 +768,20 @@ $info_list = [];
 
 		function task_list_disp(&$task_list, $lvl=0)
 		{
-			global $fk_project_actu, $fk_jalon, $projects, $tasks, $jalons, $tasks_form;
+			global $fk_project, $fk_project_actu, $fk_jalon, $projects, $tasks, $jalons, $tasks_form;
 			$lvl++;
 			foreach($task_list as &$task) {
+				$project = $projects[$task['fk_projet']];
 				// Nouveau projet
-				if ($fk_project_actu != $task['fk_projet']) {
+				if ((! $fk_project || $fk_project < 0) && $fk_project_actu != $task['fk_projet']) {
 					$fk_project_actu = $task['fk_projet'];
-					$project = $projects[$task['fk_projet']];
 					$tasks_form['P-'.$task['fk_projet']] = ['label'=>'['.$project['ref'].']'.' - '.$project['title'], 'disabled'=>true];
+				}
+				$moreinfo = '';
+				$parent_task = $task['fk_task_parent'] > 0 ?$tasks[$task['fk_task_parent']] :NULL;
+				while($parent_task) {
+					$moreinfo = $moreinfo.' <-- '.$parent_task['label'];
+					$parent_task = $parent_task['fk_task_parent'] > 0 ?$tasks[$parent_task['fk_task_parent']] :NULL;
 				}
 				// Nouveau Jalon
 				//var_dump($task['fk_jalon_commandedet'], $task['fk_jalon_commandedet'] && $fk_jalon != $task['fk_jalon_commandedet'] && isset($jalons[$task['fk_jalon_commandedet']]));
@@ -783,14 +789,14 @@ $info_list = [];
 					$fk_jalon = $task['fk_jalon_commandedet'];
 					$jalon = $jalons[$task['fk_jalon_commandedet']];
 					$tasks_form['J-'.$task['fk_jalon_commandedet']] = ['label'=>'-- '.$jalon['label'], 'disabled'=>true];
+					if (! $fk_project || $fk_project < 0) {
+						$moreinfo = $moreinfo.' <-- '.$jalon['label'];
+					}
 				}
-				$parent_tasks = '';
-				$parent_task = $task['fk_task_parent'] > 0 ?$tasks[$task['fk_task_parent']] :NULL;
-				while($parent_task) {
-					$parent_tasks = $parent_tasks.' <-- '.$parent_task['label'];
-					$parent_task = $parent_task['fk_task_parent'] > 0 ?$tasks[$parent_task['fk_task_parent']] :NULL;
+				if (! $fk_project || $fk_project < 0) {
+					$moreinfo = $moreinfo.' <-- '.$project['title'];
 				}
-				$tasks_form[$task['rowid']] = ['label'=>str_repeat('-----', $lvl-1).($lvl>1 ?'> ' :'').'['.$task['ref'].'] - '.$task['label'].($parent_tasks ?' ('.$parent_tasks.')' :''), 'project_id'=>$task['fk_projet'], 'jalon_id'=>$task['fk_jalon_commandedet']];
+				$tasks_form[$task['rowid']] = ['label'=>str_repeat('-----', $lvl-1).($lvl>1 ?'> ' :'').'['.$task['ref'].'] - '.$task['label'].($moreinfo ?' ('.$moreinfo.')' :''), 'project_id'=>$task['fk_projet'], 'jalon_id'=>$task['fk_jalon_commandedet']];
 				if (!empty($task['children'])) {
 					task_list_disp($task['children'], $lvl);
 				}
@@ -798,7 +804,7 @@ $info_list = [];
 		}
 
 		$tasks_form = [];
-		$fk_project_actu = $fk_project;
+		$fk_project_actu = NULL;
 		$fk_jalon = NULL;
 		task_list_disp($ordered_tasks);
 
