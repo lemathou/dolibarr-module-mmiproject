@@ -745,19 +745,69 @@ $info_list = [];
 		<td style="text-align: right;">Tâche :</td>
 		<td colspan="4"><?php
 		
-		$tasks_form = [];
-		$fk_project_actu = $fk_project;
-		$fk_jalon = NULL;
 		//var_dump($projects);
-		foreach($tasks as $task) {
+		// Tableau ordonné à parcourir
+		$ordered_tasks = [];
+		foreach($tasks as &$task) {
 			// Filtrage projet
 			if ($fk_project>0 && $task['fk_projet'] != $fk_project)
 				continue;
+			// Si un parent, on le met dans ses enfants
+			if ($task['fk_task_parent'] > 0) {
+				if (!isset($ordered_tasks[$task['fk_task_parent']])) {
+					$tasks[$task['fk_task_parent']]['children'] = [];
+				}
+				$tasks[$task['fk_task_parent']]['children'][] = &$task;
+			}
+			// Sinon, on met la tâche dans celles sans parent
+			else {
+				$ordered_tasks[$task['rowid']] = &$task;
+			}
+		}
+		unset($task);
+
+		function task_list_disp(&$task_list, $lvl=0)
+		{
+			global $fk_project_actu, $fk_jalon, $projects, $tasks, $jalons, $tasks_form;
+			$lvl++;
+			foreach($task_list as &$task) {
+				// Nouveau projet
+				if ($fk_project_actu != $task['fk_projet']) {
+					$fk_project_actu = $task['fk_projet'];
+					$project = $projects[$task['fk_projet']];
+					$tasks_form['P-'.$task['fk_projet']] = ['label'=>'['.$project['ref'].']'.' - '.$project['title'], 'disabled'=>true];
+				}
+				// Nouveau Jalon
+				//var_dump($task['fk_jalon_commandedet'], $task['fk_jalon_commandedet'] && $fk_jalon != $task['fk_jalon_commandedet'] && isset($jalons[$task['fk_jalon_commandedet']]));
+				if ($task['fk_jalon_commandedet'] && $fk_jalon != $task['fk_jalon_commandedet'] && isset($jalons[$task['fk_jalon_commandedet']])) {
+					$fk_jalon = $task['fk_jalon_commandedet'];
+					$jalon = $jalons[$task['fk_jalon_commandedet']];
+					$tasks_form['J-'.$task['fk_jalon_commandedet']] = ['label'=>'-- '.$jalon['label'], 'disabled'=>true];
+				}
+				$parent_tasks = '';
+				$parent_task = $task['fk_task_parent'] > 0 ?$tasks[$task['fk_task_parent']] :NULL;
+				while($parent_task) {
+					$parent_tasks = $parent_tasks.' <-- '.$parent_task['label'];
+					$parent_task = $parent_task['fk_task_parent'] > 0 ?$tasks[$parent_task['fk_task_parent']] :NULL;
+				}
+				$tasks_form[$task['rowid']] = ['label'=>str_repeat('-----', $lvl-1).($lvl>1 ?'> ' :'').'['.$task['ref'].'] - '.$task['label'].($parent_tasks ?' ('.$parent_tasks.')' :''), 'project_id'=>$task['fk_projet'], 'jalon_id'=>$task['fk_jalon_commandedet']];
+				if (!empty($task['children'])) {
+					task_list_disp($task['children'], $lvl);
+				}
+			}
+		}
+
+		$tasks_form = [];
+		$fk_project_actu = $fk_project;
+		$fk_jalon = NULL;
+		task_list_disp($ordered_tasks);
+
+		if (false) foreach($tasks as $task) {
 			// Nouveau projet
 			if ($fk_project_actu != $task['fk_projet']) {
 				$fk_project_actu = $task['fk_projet'];
 				$project = $projects[$task['fk_projet']];
-				$tasks_form['P-'.$task['fk_projet']] = ['label'=>'['.$project['ref'].'] - '.$project['title'], 'disabled'=>true];
+				$tasks_form['P-'.$task['fk_projet']] = ['label'=>'['.$project['ref'].']'.' - '.$project['title'], 'disabled'=>true];
 			}
 			// Nouveau Jalon
 			if ($task['fk_jalon_commandedet'] && $fk_jalon != $task['fk_jalon_commandedet'] && isset($jalons[$task['fk_jalon_commandedet']])) {
@@ -765,8 +815,15 @@ $info_list = [];
 				$jalon = $jalons[$task['fk_jalon_commandedet']];
 				$tasks_form['J-'.$task['fk_jalon_commandedet']] = ['label'=>'-- '.$jalon['label'], 'disabled'=>true];
 			}
-			$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'], 'project_id'=>$task['fk_projet'], 'jalon_id'=>$task['fk_jalon_commandedet']];
+			$parent_tasks = '';
+			$parent_task = $task['fk_task_parent'] > 0 ?$tasks[$task['fk_task_parent']] :NULL;
+			while($parent_task) {
+				$parent_tasks = $parent_tasks.' <-- '.$parent_task['label'];
+				$parent_task = $parent_task['fk_task_parent'] > 0 ?$tasks[$parent_task['fk_task_parent']] :NULL;
+			}
+			$tasks_form[$task['rowid']] = ['label'=>'['.$task['ref'].'] - '.$task['label'].$parent_tasks, 'project_id'=>$task['fk_projet'], 'jalon_id'=>$task['fk_jalon_commandedet']];
 		}
+
 		if (false) {
 			echo '<select name="taskid">';
 			$jalon_id = NULL;
@@ -784,6 +841,7 @@ $info_list = [];
 				echo '</optgroup>';
 			echo '</select>';
 		}
+
 		echo $form->selectArray('taskid', $tasks_form, '', 'Choisir une tâche'); //fk_task
 		?></td>
 	</tr>
