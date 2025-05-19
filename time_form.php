@@ -752,9 +752,9 @@ $info_list = [];
 			// Filtrage projet
 			if ($fk_project>0 && $task['fk_projet'] != $fk_project)
 				continue;
-			// Si un parent, on le met dans ses enfants
+			// Si un parent, on met la tâche dans ses enfants
 			if ($task['fk_task_parent'] > 0) {
-				if (!isset($ordered_tasks[$task['fk_task_parent']])) {
+				if (!isset($tasks[$task['fk_task_parent']]['children'])) {
 					$tasks[$task['fk_task_parent']]['children'] = [];
 				}
 				$tasks[$task['fk_task_parent']]['children'][] = &$task;
