@@ -124,6 +124,7 @@ class InterfaceMMIProjectTriggers extends DolibarrTriggers
 			case 'TASK_TIMESPENT_CREATE':
 			case 'TASK_TIMESPENT_MODIFY':
 			case 'TASK_TIMESPENT_DELETE':
+			case 'timespent_VALIDATE':
 				//var_dump($object);
 
 				//$object->fetch_optionals();
@@ -141,9 +142,9 @@ class InterfaceMMIProjectTriggers extends DolibarrTriggers
 					return -1;
 					break;
 				}
-
 				if ($object->planned_workload) {
 					$reste = 100 - $object->progress;
+					// Evaluation basée sur la quantité produite
 					if ($object->array_options['options_qte'] > 0) {
 						// Théorique
 						$qte = $object->array_options['options_qte'];
@@ -164,6 +165,28 @@ class InterfaceMMIProjectTriggers extends DolibarrTriggers
 						// Projection selon théorique
 						$duration_reste = $perf_real ?round($qte_reste/$perf, 2) :'';
 						$object->array_options['options_temps_restant_prevu_2'] = $duration_reste;
+					}
+					// Evaluation basée sur la progression
+					else {
+						if ($reste > 0 && $reste != 100) {
+							$duration_real = $object->duration_effective/3600;
+							$reste_workload = $duration_real/($reste/100);
+							$duration_reste = round($reste_workload, 2);
+							$object->array_options['options_temps_restant_prevu_1'] = $duration_reste;
+							//var_dump($object->progress);
+							// Projection selon théorique
+							$reste_workload = $object->planned_workload*$reste/100;
+							$duration_reste = round($reste_workload/3600, 2);
+							$object->array_options['options_temps_restant_prevu_2'] = $duration_reste;
+						}
+						elseif($reste == 100) {
+							$object->array_options['options_temps_restant_prevu_1'] = round($object->duration_effective/86400, 2);
+							$object->array_options['options_temps_restant_prevu_2'] = round($object->duration_effective/86400, 2);
+						}
+						elseif($reste == 0) {
+							$object->array_options['options_temps_restant_prevu_1'] = 0;
+							$object->array_options['options_temps_restant_prevu_2'] = 0;
+						}
 					}
 					//var_dump($object);
 					// No triggers !!
