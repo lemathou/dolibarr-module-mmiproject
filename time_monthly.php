@@ -445,6 +445,26 @@ for($i=1;$i<=$periode_fin_weeknum;$i++) {
 	$cumul_week[$periode_year_fin.'-'.$i]['dates'] = getStartAndEndDate($i, $periode_year_fin);
 }
 
+
+function ferie_check($ldate, $ddate, &$r)
+{
+	global $holidays, $soliday;
+
+	$daynumofweek = date('w', $ldate);
+
+	$isferie = in_array($ddate, $holidays);
+
+	if ($isferie && $ddate!=$soliday)
+		$r['nbferies']++;
+	if ($isferie && $daynumofweek==0)
+		$r['nbferiesdim']++;
+	// on ne comptabilise pas
+	if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
+		return false;
+	
+	return true;
+}
+
 $employ = $defaultemploy;
 //var_dump($employ); die();
 foreach($cumul_week as $j=>&$r) {
@@ -455,21 +475,16 @@ foreach($cumul_week as $j=>&$r) {
 	$d = 0;
 	for ($i=0;$i<=6;$i++) {
 		$ldate = strtotime($r['dates']['week_start'])+$i*86400;
+		$daynumofweek = ($i==6 ?0 :($i+1));
+		$ddate = date('Y-m-d', $ldate);
 		// Check jour à prendre en compte début d'exercice
 		if ($j == $periode_year_debut.'-'.$periode_debut_weeknum && $ldate < $periode_debut_ts)
 			continue;
-		$daynumofweek = ($i==6 ?0 :($i+1));
-		$ddate = date('Y-m-d', $ldate);
-		$isferie = in_array($ddate, $holidays);
-		if ($isferie && $ddate!=$soliday)
-			$r['nbferies']++;
-		if ($isferie && $daynumofweek==0)
-			$r['nbferiesdim']++;
-			// on ne comptabilise pas
-		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
-			continue;
 
 		if (! employ_check($employs, $employ, $ddate, $r))
+			continue;
+
+		if (! ferie_check($ldate, $ddate, $r))
 			continue;
 
 		// Travaillable
@@ -510,7 +525,6 @@ for($i=1;$i<=$periode_mois_fin;$i++) {
 }
 //var_dump($cumul_mois);
 
-
 // Jours par mois
 
 $employ = $defaultemploy;
@@ -523,17 +537,11 @@ foreach($cumul_mois as &$r) {
 		$ldate = mktime(0, 0, 0, $r['month'], $i, $r['year']);
 		$daynumofweek = date('w', $ldate);
 		$ddate = date('Y-m-d', $ldate);
-		$isferie = in_array($ddate, $holidays);
-		$date_workday = 0;
-		if ($isferie && $ddate!=$soliday)
-			$r['nbferies']++;
-		if ($isferie && $daynumofweek==0)
-			$r['nbferiesdim']++;
-		// on ne comptabilise pas
-		if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
-			continue;
 
 		if (! employ_check($employs, $employ, $ddate, $r))
+			continue;
+
+		if (! ferie_check($ldate, $ddate, $r))
 			continue;
 
 		// Jour travaillable
@@ -580,12 +588,12 @@ for ($i=1;$i<=$month_number;$i++) {
 	$ldate = mktime(0, 0, 0, $month, $i, $year);
 	$ddate = date('Y-m-d', $ldate);
 	$daynumofweek = date('w', $ldate);
-	$isferie = in_array($ddate, $holidays) || $daynumofweek==0;
 
 	if (! employ_check($employs, $employ, $ddate))
 		continue;
 
 	// Travaillable
+	$isferie = in_array($ddate, $holidays) || $daynumofweek==0;
 	$date_workday = 0;
 	
 	if (!($isferie && $ddate!=$soliday) && !in_array($daynumofweek, [0,6])) {
