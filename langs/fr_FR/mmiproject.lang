@@ -26,7 +26,6 @@ ModuleMMIProjectDesc = Crée un projet chantier à partir d'une commande avec un
 # Admin page
 #
 MMIProjectSetup = MMIProject setup
-Settings = Settings
 MMIProjectSetupPage = MMIProject setup page
 
 MMIPROJECT_TIME = Gestion du temps/planning
@@ -103,7 +102,6 @@ ExtrafieldToolTip_product_task_name = Lors de la création d'un proket de chanti
 #
 # About page
 #
-About = About
 MMIProjectAbout = A propos de MMIProject
 MMIProjectAboutPage = MMIProject Informations utiles (about)
 
