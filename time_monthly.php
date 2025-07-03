@@ -272,10 +272,10 @@ function employ_check(&$employs, &$employ, $ddate, &$r=NULL)
 		return false;
 	}
 	// Change contract
-	if (!empty($employ['end_date']) && $employ['end_date'] <= $ddate) {
+	if (!empty($employ['end_date']) && $employ['end_date'] < $ddate) {
 		$employ_ok = false;
 		foreach($employs as $emp) {
-			if (empty($emp['end_date']) || $ddate < $emp['end_date']) {
+			if (empty($emp['end_date']) || $ddate <= $emp['end_date']) {
 				$employ = $emp;
 				$employ_ok = true;
 				if(is_array($r)) {
