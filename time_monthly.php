@@ -229,6 +229,7 @@ $employs = [];
 if ($q) {
 	while($r=$db->fetch_array($q)) {
 		$employs[$r['dateemployment']] = [
+			'ref' => $r['ref'],
 			'begin_date' => $r['dateemployment'],
 			'end_date' => $r['dateemploymentend'],
 			'weekly' => $r['weeklyhours'],
@@ -359,6 +360,25 @@ function week_id($ldate)
 	return $week_id;
 }
 
+function ferie_check($ldate, $ddate, &$r)
+{
+	global $holidays, $soliday;
+
+	$daynumofweek = date('w', $ldate);
+
+	$isferie = in_array($ddate, $holidays);
+
+	if ($isferie && $ddate!=$soliday)
+		$r['nbferies']++;
+	if ($isferie && $daynumofweek==0)
+		$r['nbferiesdim']++;
+	// on ne comptabilise pas
+	if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
+		return false;
+	
+	return true;
+}
+
 // Valeurs par défaut
 // Nb par semaine
 $weekly = $task_user->weeklyhours;
@@ -399,6 +419,8 @@ foreach($holidays2 as $day)
 //var_dump($holidays);
 
 $model = [
+	//'employ' => NULL,
+	//
 	'duration' => 0,
 	'deplacement_duration' => 0,
 	'ferie_duration' => 0,
@@ -443,26 +465,6 @@ for($i=1;$i<=$periode_fin_weeknum;$i++) {
 	$cumul_week[$periode_year_fin.'-'.$i]['year'] = $periode_year_fin;
 	$cumul_week[$periode_year_fin.'-'.$i]['weeknum'] = $i;
 	$cumul_week[$periode_year_fin.'-'.$i]['dates'] = getStartAndEndDate($i, $periode_year_fin);
-}
-
-
-function ferie_check($ldate, $ddate, &$r)
-{
-	global $holidays, $soliday;
-
-	$daynumofweek = date('w', $ldate);
-
-	$isferie = in_array($ddate, $holidays);
-
-	if ($isferie && $ddate!=$soliday)
-		$r['nbferies']++;
-	if ($isferie && $daynumofweek==0)
-		$r['nbferiesdim']++;
-	// on ne comptabilise pas
-	if (($isferie && $ddate!=$soliday) || in_array($daynumofweek, [0,6]))
-		return false;
-	
-	return true;
 }
 
 $employ = $defaultemploy;
@@ -591,6 +593,7 @@ for ($i=1;$i<=$month_number;$i++) {
 
 	if (! employ_check($employs, $employ, $ddate))
 		continue;
+	//var_dump($employ);
 
 	// Travaillable
 	$isferie = in_array($ddate, $holidays) || $daynumofweek==0;
@@ -603,6 +606,7 @@ for ($i=1;$i<=$month_number;$i++) {
 	$month_workdays += $date_workday;
 
 	$l[$ddate] = array_merge([
+		'employ' => $employ,
 		'ldate' => $ldate,
 		'dayofweek' => strftime('%A', $ldate),
 		'daynumofweek' => $daynumofweek,
@@ -615,6 +619,7 @@ for ($i=1;$i<=$month_number;$i++) {
 		],
 		$model);
 }
+//var_dump($l);
 
 // Assignation fériés ouvrés
 
@@ -1061,6 +1066,7 @@ echo '<thead>';
 	echo '<th>Jour</th>';
 	echo '<th>Date</th>';
 	$colspantot = $colspan + 3;
+	echo '<th width="60">H. théo.</th>';
 	echo '<th width="60">H. trav.</th>';
 	echo '<th width="60">H. dépl.</th>';
 	echo '<th width="60">H. dépl. hors trav.</th>';
@@ -1095,10 +1101,12 @@ foreach($l as $ddate=>$row) {
 	// Cumul semaine
 	foreach(array_keys($model) as $key) if (!in_array($key, ['seuil1_duration', 'seuil2_duration']))
 		$week[$key] += $row[$key];
+	$week['daily'] += $row['daily'];
 
 	echo '<tr class="'.($row['isferie'] ?'holyday' :'').'">';
 	echo '<td>'.$row['dayofweek'].'</td>';
 	echo '<td><a href="/custom/mmiproject/time_form.php?date='.$row['date'].'">'.$row['date'].'</a></td>';
+	echo '<td>'.duration_aff($row['daily']).'</td>';
 	echo '<td>'.duration_aff($row['duration']).'</td>';
 	echo '<td>'.duration_aff($row['deplacement_duration']).'</td>';
 	echo '<td></td>';
@@ -1111,6 +1119,7 @@ foreach($l as $ddate=>$row) {
 	echo '<td>'.($row['arret_justifie'] ?$row['arret_justifie'] :'').'</td>';
 	echo '<td>'.($row['arret_formation'] ?$row['arret_formation'] :'').'</td>';
 	echo '<td>'; if (!empty($row['fk_projets'])) foreach($row['fk_projets'] as $projet_id) echo '<a href="/projet/card.php?id='.$projet_id.'">'.$projets[$projet_id]['label'].'</a> '; echo '</td>';
+	echo '<td>'.($row['employ']['weekly']).'</td>';
 	echo '</tr>';
 
 	// Récap semaine
@@ -1121,6 +1130,7 @@ foreach($l as $ddate=>$row) {
 		echo '<tr>';
 		echo '<td><b>SSTOTAL</b></td>';
 		echo '<td colspan="'.$colspan.'"></td>';
+		echo '<td>'.duration_aff($week['daily']).'</td>';
 		echo '<td>'.duration_aff($week['duration']).'</td>';
 		echo '<td>'.duration_aff($week['deplacement_duration']).'</td>';
 		echo '<td></td>';
@@ -1136,6 +1146,7 @@ foreach($l as $ddate=>$row) {
 		// Cumul mois
 		foreach(array_keys($model) as $key)
 			$total[$key] += $week[$key];
+		$total['daily'] += $week['daily'];
 	}
 
 	$ldate_before = $ldate;
@@ -1144,6 +1155,7 @@ foreach($l as $ddate=>$row) {
 	echo '<tr>';
 	echo '<th>TOTAL</th>';
 	echo '<th></th>';
+	echo '<td>'.duration_aff($total['daily']).'</td>';
 	echo '<td>'.duration_aff($total['duration']).'</td>';
 	echo '<td>'.duration_aff($total['deplacement_duration']).'</td>';
 	echo '<td></td>';
