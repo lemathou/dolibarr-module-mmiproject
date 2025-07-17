@@ -943,6 +943,12 @@ class ActionsMMIProject extends MMI_Actions_1_0
 			if (GETPOST('search_no_advanced_100', 'bool')) {
 				$print .= '&search_no_advanced_100=1';
 			}
+			if ($search_fk_c_type_contact_project=GETPOST('search_fk_c_type_contact_project', 'int')) {
+				$print .= '&search_fk_c_type_contact_project='.$search_fk_c_type_contact_project;
+			}
+			if ($search_fk_c_type_contact_task=GETPOST('search_fk_c_type_contact_task', 'int')) {
+				$print .= '&search_fk_c_type_contact_task='.$search_fk_c_type_contact_task;
+			}
 		}
 
 		if (! $error)
