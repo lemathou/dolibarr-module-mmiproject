@@ -25,7 +25,6 @@
  */
 
 // Load Dolibarr environment
-require_once 'env.inc.php';
 require_once 'main_load.inc.php';
  
 require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';

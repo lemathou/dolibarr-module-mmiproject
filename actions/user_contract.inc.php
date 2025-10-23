@@ -1,5 +1,10 @@
 <?php
 
+// Protection against direct call of file
+if (!defined('DOL_VERSION')) {
+	die('You cannot access this file directly');
+}
+
 $link_id = GETPOST('link_id', 'int');
 $status = GETPOST('status', 'int');
 $ref = GETPOST('ref', 'alpha');

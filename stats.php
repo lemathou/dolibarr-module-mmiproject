@@ -16,8 +16,8 @@
  */
 
 // Load Dolibarr environment
-require_once 'env.inc.php';
 require_once 'main_load.inc.php';
+
 dol_include_once('/mmicommon/lib/mmi.lib.php');
 
 // Access control

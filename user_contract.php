@@ -20,7 +20,7 @@
  *   \brief      User contracts handling
  */
 
-require_once 'env.inc.php';
+// Load Dolibarr environment
 require_once 'main_load.inc.php';
 
 $tab_name = 'user_contract';

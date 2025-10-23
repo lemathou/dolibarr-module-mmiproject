@@ -1,4 +1,11 @@
-<h2>Ressources liées</h2>
+<?php
+
+// Protection against direct call of file
+if (!defined('DOL_VERSION')) {
+	die('You cannot access this file directly');
+}
+
+?><h2>Ressources liées</h2>
 
 <p style="float: right;margin: 10px;"><a href="?id=<?php echo $id; ?>&add">Ajouter</a></p>
 

@@ -16,7 +16,6 @@
  */
 
 // Load Dolibarr environment
-require_once 'env.inc.php';
 require_once 'main_load.inc.php';
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
@@ -26,6 +25,7 @@ require_once DOL_DOCUMENT_ROOT.'/holiday/class/holiday.class.php';
 
 dol_include_once('/mmiproject/lib/mmiproject.lib.php');
 
+// @todo should be in conf, ent parameter
 setlocale(LC_TIME, "fr_FR.utf8");
 date_default_timezone_set('Europe/Paris');
 
@@ -703,7 +703,7 @@ if ($q) {
 
 // Jours de Congés & co du mois
 $employ = $defaultemploy;
-$sql = 'SELECT h.date_debut, h.date_fin, h.fk_type
+$sql = 'SELECT h.date_debut, h.date_fin, h.halfday, h.fk_type
 FROM '.MAIN_DB_PREFIX.'holiday h
 WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
 	AND (
@@ -712,6 +712,14 @@ WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
 	)';
 //echo '<pre>'.$sql.'</pre>';
 $q = $db->query($sql);
+/*
+halfday meaning:
+0: full days
+1: finish morning (impact -0.5 day)
+2: start afternoon (impact -0.5 day)
+-1: finish morning & start afternoon (impact -1 day)
+*/
+
 //var_dump($q); var_dump($db);
 if ($q) {
 	while($r=$db->fetch_array($q)) {
@@ -758,7 +766,15 @@ if ($q) {
 			// Travaillable
 			$date_workday = date_workday($employ, $ddate);
 
-			$l[$ddate]['arret_'.$type] = $date_workday*$employ['daily'];
+			// Halfday coeff
+			if ($i==$first && in_array($r['halfday'], [-1, 2]))
+				$halfday_coeff = 0.5;
+			elseif ($i==$last && in_array($r['halfday'], [1, 2]))
+				$halfday_coeff = 0.5;
+			else
+				$halfday_coeff = 1;
+
+			$l[$ddate]['arret_'.$type] = $date_workday*$employ['daily']*$halfday_coeff;
 			//var_dump($l[$ddate]['arret_'.$type]);
 		}
 	}
@@ -872,7 +888,7 @@ if ($q) {
 
 
 $employ = $defaultemploy;
-$sql = 'SELECT h.date_debut, h.date_fin, h.fk_type, ht.code
+$sql = 'SELECT h.date_debut, h.date_fin, h.halfday, h.fk_type, ht.code
 FROM '.MAIN_DB_PREFIX.'holiday h
 INNER JOIN '.MAIN_DB_PREFIX.'c_holiday_types ht ON ht.rowid=h.fk_type
 WHERE h.fk_user='.$task_fk_user.' AND h.statut = '.Holiday::STATUS_APPROVED.'
@@ -969,10 +985,18 @@ if ($q) {
 			// Travaillable
 			$date_workday = date_workday($employ, $ddate);
 
-			$cumul_mois[$mois_id]['arret_'.$type] += $date_workday*$employ['daily'];
-			$cumul_mois[$mois_id]['arret_'.$type.'_j'] += $date_workday;
-			$cumul_week[$week_id]['arret_'.$type] += $date_workday*$employ['daily'];
-			$cumul_week[$week_id]['arret_'.$type.'_j'] += $date_workday;
+			// Halfday coeff
+			if ($ddate==$r['date_debut'] && in_array($r['halfday'], [-1, 2]))
+				$halfday_coeff = 0.5;
+			elseif ($ddate==$r['date_fin'] && in_array($r['halfday'], [1, 2]))
+				$halfday_coeff = 0.5;
+			else
+				$halfday_coeff = 1;
+
+			$cumul_mois[$mois_id]['arret_'.$type] += $date_workday*$employ['daily']*$halfday_coeff;
+			$cumul_mois[$mois_id]['arret_'.$type.'_j'] += $date_workday*$halfday_coeff;
+			$cumul_week[$week_id]['arret_'.$type] += $date_workday*$employ['daily']*$halfday_coeff;
+			$cumul_week[$week_id]['arret_'.$type.'_j'] += $date_workday*$halfday_coeff;
 
 			if ($type=='rcr') {
 				$hsup_prev_rcr_pris += $date_workday*$employ['daily'];

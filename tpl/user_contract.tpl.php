@@ -1,5 +1,10 @@
 <?php
 
+// Protection against direct call of file
+if (!defined('DOL_VERSION')) {
+	die('You cannot access this file directly');
+}
+
 $weekdays = [1=>'Lundi', 2=>'Mardi', 3=>'Mercredi', 4=>'Jeudi', 5=>'Vendredi', 6=>'Samedi'];
 
 ?><h2>Contrats de travail</h2>
