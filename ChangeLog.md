@@ -12,3 +12,7 @@ Fix url timesheet configured with the right user, and the possibility to change 
 
 Fix : contract add : Remove default values
 
+## 1.0.3
+
+Fix : update time pagination bug if too much : filter by date
+
