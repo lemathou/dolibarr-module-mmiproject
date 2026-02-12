@@ -500,7 +500,7 @@ function parseTime2(t)
 </script>
 
 <!-- /projet/task/time.php -->
-<form id="form_add" action="" method="POST">
+<form id="form_add" action="?" method="POST">
 <input name="action" type="hidden" value="addtimespent" />
 
 <input name="timeyear" type="hidden" value="<?php echo $year; ?>" />
