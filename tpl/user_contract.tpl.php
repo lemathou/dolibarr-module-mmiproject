@@ -34,15 +34,15 @@ $weekdays = [1=>'Lundi', 2=>'Mardi', 3=>'Mercredi', 4=>'Jeudi', 5=>'Vendredi', 6
 	</tr>
 	<tr>
 		<td><label for="weeklyhours"><?php echo $langs->trans('WeeklyHours'); ?></label></td>
-		<td><input id="weeklyhours" type="text" name="weeklyhours" value="35" /></td>
+		<td><input id="weeklyhours" type="text" name="weeklyhours" value="" /></td>
 	</tr>
 	<tr>
 		<td><label for="dailyhours"><?php echo $langs->trans('DailyWorkedHours'); ?></label></td>
-		<td><input id="dailyhours" type="text" name="dailyhours" value="7" /></td>
+		<td><input id="dailyhours" type="text" name="dailyhours" value="" /></td>
 	</tr>
 	<tr>
 		<td><label for="workdaysnb"><?php echo $langs->trans('Extrafield_workdaysnb'); ?></label></td>
-		<td><input id="workdaysnb" type="text" name="workdaysnb" value="5" /></td>
+		<td><input id="workdaysnb" type="text" name="workdaysnb" value="" /></td>
 	</tr>
 	<tr>
 		<td><label for="workdays"><?php echo $langs->trans('Extrafield_workdays'); ?></label></td>

@@ -8,3 +8,7 @@ Initial version
 
 Fix url timesheet configured with the right user, and the possibility to change date
 
+## 1.0.2
+
+Fix : contract add : Remove default values
+
