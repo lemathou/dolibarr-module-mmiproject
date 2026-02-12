@@ -680,6 +680,7 @@ foreach($time_users as $userid=>$time_user) {
 <?php
 $duree_tot = 0;
 $info_list = [];
+$date_e = explode('-', $date);
 ?>
 <?php foreach($time_day as $row) {
 	$task = $tasks[$row['fk_element']];
@@ -705,8 +706,8 @@ $info_list = [];
 		<td>
 		<?php if (empty($user_pay[$row['fk_user']][$yearmonth]['month_hours_sign_date'])) { ?>
 			<?php if ($row['fk_user']==$user->id || $time_admin) { ?>
-			<a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?limit=1000&id=<?php echo $row['fk_element']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
-			<a class="reposition paddingleft" target="_blank" href="/projet/tasks/time.php?limit=1000&id=<?php echo $row['fk_element']; ?>&amp;action=deleteline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist&amp;token=<?php echo $token; ?>"><span class="fas fa-trash pictodelete paddingleft" style="" title="Supprimer"></span></a>
+			<a class="reposition editfielda" target="_blank" href="/projet/tasks/time.php?limit=1000&<?php echo $date_url='search_date_startday='.$date_e[2].'&search_date_startmonth='.$date_e[2].'&search_date_startyear='.$date_e[0].'&search_date_endday='.$date_e[2].'&search_date_endmonth='.$date_e[1].'&search_date_endyear='.$date_e[0]; ?>&id=<?php echo $row['fk_element']; ?>&amp;action=editline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist"><span class="fas fa-pencil-alt" style=" color: #444;" title="Modifier"></span></a>
+			<a class="reposition paddingleft" target="_blank" href="/projet/tasks/time.php?limit=1000&<?php echo $date_url; ?>&id=<?php echo $row['fk_element']; ?>&amp;action=deleteline&amp;lineid=<?php echo $row['rowid']; ?>&contextpage=timespentlist&amp;token=<?php echo $token; ?>"><span class="fas fa-trash pictodelete paddingleft" style="" title="Supprimer"></span></a>
 			<?php }
 			if ($datenew && $time_useradd) { ?>
 			<input class="duplicate" type="button" value="Dupliquer" />
