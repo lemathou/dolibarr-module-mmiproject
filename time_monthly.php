@@ -1129,7 +1129,7 @@ foreach($l as $ddate=>$row) {
 
 	echo '<tr class="'.($row['isferie'] ?'holyday' :'').'">';
 	echo '<td>'.$row['dayofweek'].'</td>';
-	echo '<td><a href="/custom/mmiproject/time_form.php?date='.$row['date'].'">'.$row['date'].'</a></td>';
+	echo '<td><a href="/custom/mmiproject/time_form.php?date='.$row['date'].'&userid[]='.$task_fk_user.'">'.$row['date'].'</a></td>';
 	echo '<td>'.duration_aff($row['daily']).'</td>';
 	echo '<td>'.duration_aff($row['duration']).'</td>';
 	echo '<td>'.duration_aff($row['deplacement_duration']).'</td>';

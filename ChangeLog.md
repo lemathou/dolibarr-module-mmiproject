@@ -3,3 +3,8 @@
 ## 1.0
 
 Initial version
+
+## 1.0.1
+
+Fix url timesheet configured with the right user, and the possibility to change date
+
