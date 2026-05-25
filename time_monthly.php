@@ -41,7 +41,7 @@ $show_rcr = true;
 $right_contract_all = $user->rights->mmiproject->contract->all;
 
 // @todo rendre administrable
-$solidays = !empty($conf->global->MMIPROJECT_SOLIDAYS) ?explode(',', $conf->global->MMIPROJECT_SOLIDAYS) :['2022-11-01','2024-11-11'];
+$solidays = !empty($conf->global->MMIPROJECT_SOLIDAY) ?explode(',', $conf->global->MMIPROJECT_SOLIDAY) :['2022-11-01','2024-11-11'];
 
 $time = time();
 
