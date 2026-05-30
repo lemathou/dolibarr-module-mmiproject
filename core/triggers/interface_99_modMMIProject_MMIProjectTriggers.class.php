@@ -137,7 +137,7 @@ class InterfaceMMIProjectTriggers extends DolibarrTriggers
 
 				$sql = 'SELECT rowid, month_hours_sign_date FROM '.MAIN_DB_PREFIX.'user_pay WHERE fk_user='.$user_id.' AND `date`="'.$ym.'-01"';
 				$resql = $db->query($sql);
-				if ($resql && ($db->num_rows($resql) > 0) && ($obj = $db->fetch_object($resql))) {
+				if ($resql && ($db->num_rows($resql) > 0) && ($obj = $db->fetch_object($resql)) && !empty($obj->month_hours_sign_date)) {
 					$this->errors[] = 'Impossible de supprimer, modifier ou ajouter du temps sur le mois '.$ym.', il a été validé le '.$obj->month_hours_sign_date;
 					return -1;
 					break;
